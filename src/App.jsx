@@ -1,4 +1,8 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+/* ═════════ SITE SETTINGS – change these ═════════ */
+const SITE_NAME = "DartsPlanet";
+const CONTACT_EMAIL = "dartsplanet180@gmail.com";
 
 /* ═════════ 1. PLAYERS (used for autocomplete) ═════════
    Every PDC World Championship player. Just names – add new ones at the end. */
@@ -336,22 +340,159 @@ function QuestionMenu({ onPick }) {
 }
 
 /* ═════════ APP ═════════ */
+/* ═════════ FOOTER + INFO PAGES ═════════ */
+function Footer() {
+  return (
+    <footer className="mt-12 border-t border-stone-800 px-4 py-8 text-center">
+      <div className="flex justify-center gap-6 text-lg font-bold text-emerald-400">
+        <a href="#privacy" className="hover:text-emerald-300">Privacy</a>
+        <a href="#contact" className="hover:text-emerald-300">Contact</a>
+      </div>
+      <p className="mx-auto mt-4 max-w-md text-sm text-stone-500">
+        <span className="text-stone-200">© {new Date().getFullYear()} {SITE_NAME} //</span> All logos and brands are
+        property of their respective owners and are used for identification purposes only
+      </p>
+    </footer>
+  );
+}
+
+function InfoPage({ title, children }) {
+  return (
+    <div className="mx-auto w-full max-w-xl px-4 py-8">
+      <a href="#" className="text-sm text-stone-400 hover:text-stone-100">← Back to {SITE_NAME}</a>
+      <h1 className="mt-4 text-3xl font-black">{title}</h1>
+      <div className="mt-4 space-y-4 text-stone-300">{children}</div>
+    </div>
+  );
+}
+
+function Privacy() {
+  const H = ({ children }) => <h2 className="pt-2 text-xl font-bold text-stone-100">{children}</h2>;
+  const mail = <a className="text-emerald-400 underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>;
+  return (
+    <InfoPage title="Privacy Policy">
+      <p className="text-sm text-stone-500">Last updated: 14 October 2026</p>
+      <p>
+        This Privacy Policy explains how {SITE_NAME} ("we", "us", "the site") handles information when you visit and
+        play our free darts trivia games. By using the site you agree to this policy.
+      </p>
+
+      <H>Information we collect</H>
+      <p>
+        We do not require you to create an account, and we do not ask for your name, email address or any other
+        personal details to play. We do not store your game results or progress on our servers.
+      </p>
+      <p>
+        If you contact us by email, we receive your email address and the contents of your message. We use these only
+        to reply to you and do not share them.
+      </p>
+
+      <H>Technical data and hosting</H>
+      <p>
+        Like most websites, the site is delivered through a hosting provider and content delivery services. When you
+        load a page, these providers may automatically receive technical data such as your IP address, browser type,
+        device type and the pages requested. This is used to deliver the site, keep it secure and understand overall
+        traffic.
+      </p>
+
+      <H>Cookies and similar technologies</H>
+      <p>
+        The site itself does not set cookies. However, third parties we use, such as advertising and analytics
+        providers, may use cookies, local storage, device identifiers or similar technologies to operate their
+        services. You can control or delete cookies in your browser settings.
+      </p>
+
+      <H>Advertising</H>
+      <p>
+        We may show ads from third-party networks such as Google AdSense. These companies may use cookies and data
+        about your visits to this and other websites to show ads that are relevant to you. Google's use of
+        advertising cookies lets it and its partners serve ads based on your visit to this site and other sites on
+        the internet. You can opt out of personalised advertising at adssettings.google.com, and learn more about
+        online advertising choices at aboutads.info or youronlinechoices.eu. Where required by law, we ask for your
+        consent before personalised ads or non-essential cookies are used.
+      </p>
+
+      <H>Analytics</H>
+      <p>
+        We may use analytics tools to measure how many people visit the site and which games are played. This
+        information is aggregated and used to improve the site.
+      </p>
+
+      <H>Third-party links and logos</H>
+      <p>
+        The site may link to other websites. We are not responsible for their content or privacy practices. Names,
+        logos and brands shown on the site belong to their respective owners and are used for identification purposes
+        only.
+      </p>
+
+      <H>Your rights</H>
+      <p>
+        Depending on where you live (for example in the EU, UK or California), you may have rights to access, correct
+        or delete personal data we hold about you, to object to or restrict certain processing, and to withdraw
+        consent at any time. Because we collect very little personal data, this mostly applies to emails you send us.
+        To make a request, contact us at {mail}.
+      </p>
+
+      <H>Children</H>
+      <p>
+        The site is not directed at children under 13, and we do not knowingly collect personal information from
+        children. If you believe a child has sent us personal information, contact us and we will delete it.
+      </p>
+
+      <H>Changes to this policy</H>
+      <p>We may update this policy from time to time. The "last updated" date at the top shows when it last changed.</p>
+
+      <H>Contact</H>
+      <p>Questions about this policy? Email {mail}.</p>
+    </InfoPage>
+  );
+}
+
+function Contact() {
+  return (
+    <InfoPage title="Contact">
+      <p>Found a mistake in a question, have a suggestion for a game, or want to get in touch? Send us an email:</p>
+      <p><a className="text-xl font-bold text-emerald-400 underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+    </InfoPage>
+  );
+}
+
+/* ═════════ APP ═════════ */
 export default function App() {
   const [screen, setScreen] = useState("menu"); // "menu" | "questions" | "game"
   const [question, setQuestion] = useState(null);
+  const [hash, setHash] = useState(window.location.hash);
+
+  // Footer links use #privacy and #contact so each page has its own web address
+  useEffect(() => {
+    const onHash = () => { setHash(window.location.hash); window.scrollTo(0, 0); };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
 
   const back = () => setScreen(screen === "game" ? "questions" : "menu");
 
   return (
-    <div className="min-h-screen bg-stone-950 text-stone-100">
-      {screen !== "menu" && (
-        <header className="border-b border-stone-800 px-4 py-3">
-          <button onClick={back} className="text-sm text-stone-400 hover:text-stone-100">← Back</button>
-        </header>
-      )}
-      {screen === "menu" && <MainMenu onPlay={() => setScreen("questions")} />}
-      {screen === "questions" && <QuestionMenu onPick={(q) => { setQuestion(q); setScreen("game"); }} />}
-      {screen === "game" && <TopTen key={question.date} q={question} onBack={() => setScreen("questions")} />}
+    <div className="flex min-h-screen flex-col bg-stone-950 text-stone-100">
+      <main className="flex-1">
+        {hash === "#privacy" ? (
+          <Privacy />
+        ) : hash === "#contact" ? (
+          <Contact />
+        ) : (
+          <>
+            {screen !== "menu" && (
+              <header className="border-b border-stone-800 px-4 py-3">
+                <button onClick={back} className="text-sm text-stone-400 hover:text-stone-100">← Back</button>
+              </header>
+            )}
+            {screen === "menu" && <MainMenu onPlay={() => setScreen("questions")} />}
+            {screen === "questions" && <QuestionMenu onPick={(q) => { setQuestion(q); setScreen("game"); }} />}
+            {screen === "game" && <TopTen key={question.date} q={question} onBack={() => setScreen("questions")} />}
+          </>
+        )}
+      </main>
+      <Footer />
     </div>
   );
 }
