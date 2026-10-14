@@ -116,7 +116,7 @@ const PLAYERS = [
    To add a day, copy one block and add it to the end of the list. */
 const QUESTIONS = [
   {
-    date: "2026-10-13",
+    date: "2026-10-14",
     title: "2015 Premier League of Darts lineup",
     answers: [
       "Michael van Gerwen", "Phil Taylor", "Gary Anderson", "Adrian Lewis", "Peter Wright",
