@@ -113,14 +113,24 @@ const PLAYERS = [
    title   = the question shown once the game starts
    answers = the 10 correct players IN ORDER (1st place first).
              Each name must match a name in PLAYERS above.
-   To add a day, copy one block and add it to the end of the list. */
+   To add a day, copy one block and add it to the end of the list.
+   You can add questions for future dates ahead of time – they stay hidden
+   until that date arrives. */
 const QUESTIONS = [
   {
-    date: "2026-10-14",
+    date: "2026-10-15",
     title: "2015 Premier League of Darts lineup",
     answers: [
       "Michael van Gerwen", "Phil Taylor", "Gary Anderson", "Adrian Lewis", "Peter Wright",
       "James Wade", "Dave Chisnall", "Kim Huybrechts", "Raymond van Barneveld", "Stephen Bunting",
+    ],
+  },
+  {
+    date: "2026-10-16",
+    title: "Last 10 players to lose a PDC World Championship semi-final",
+    answers: [
+      "Ryan Searle", "Gary Anderson", "Chris Dobey", "Stephen Bunting", "Rob Cross",
+      "Scott Williams", "Gabriel Clemens", "Dimitri Van den Bergh", "James Wade", "Dave Chisnall",
     ],
   },
 ];
@@ -292,7 +302,7 @@ function TopTen({ q, onBack }) {
 const GAMES = [
   { id: "top-10", name: "The Top 10", blurb: "Name all 10. Three lives. No misses = a whitewash!", live: true },
   { id: "commentary", name: "Guess the Commentary", blurb: "Coming soon", live: false },
-  { id: "higher", name: "Higher or Lower", blurb: "Coming soon", live: false },
+  { id: "soon", name: "Coming soon", blurb: "Another game is on its way", live: false },
 ];
 
 function Card({ title, sub, onClick, disabled }) {
@@ -325,7 +335,9 @@ function MainMenu({ onPlay }) {
 }
 
 function QuestionMenu({ onPick }) {
-  const sorted = [...QUESTIONS].sort((a, b) => b.date.localeCompare(a.date)); // newest first
+  // Only show questions whose date has arrived, so future ones stay hidden until their day
+  const today = new Date().toLocaleDateString("en-CA"); // "YYYY-MM-DD" in the visitor's local time
+  const sorted = QUESTIONS.filter((q) => q.date <= today).sort((a, b) => b.date.localeCompare(a.date)); // newest first
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-10">
       <h1 className="text-center text-3xl font-black">The Top 10</h1>
@@ -339,14 +351,82 @@ function QuestionMenu({ onPick }) {
   );
 }
 
-/* ═════════ APP ═════════ */
+/* ═════════ DARTBOARD DECORATION (top-left corner) ═════════ */
+const BOARD_ORDER = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+const pt = (r, deg) => { const a = (deg * Math.PI) / 180; return [r * Math.sin(a), -r * Math.cos(a)]; };
+const ringPath = (r1, r2, a0, a1) => {
+  const [x0, y0] = pt(r2, a0), [x1, y1] = pt(r2, a1), [x2, y2] = pt(r1, a1), [x3, y3] = pt(r1, a0);
+  return `M${x0},${y0} A${r2},${r2} 0 0 1 ${x1},${y1} L${x2},${y2} A${r1},${r1} 0 0 0 ${x3},${y3} Z`;
+};
+
+function Dartboard() {
+  // Board centre sits on the page corner, so only one quarter is visible. It turns very slowly.
+  const still = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const BLACK = "#0c0c0c", CREAM = "#efe3c4", RED = "#dc2626", GREEN = "#16a34a", WIRE = "#d6d3d1";
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute left-0 top-0 z-0 h-28 w-28 sm:h-44 sm:w-44 md:h-56 md:w-56">
+      <svg viewBox="0 0 235 235" className="h-full w-full">
+        <g>
+          {!still && <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="180s" repeatCount="indefinite" />}
+          <circle r="232" fill="#e7e5e4" />
+          <circle r="226" fill={BLACK} />
+          {BOARD_ORDER.map((n, i) => {
+            const a0 = i * 18 - 9, a1 = i * 18 + 9, dark = i % 2 === 0;
+            return (
+              <g key={n}>
+                <path d={ringPath(15.9, 99, a0, a1)} fill={dark ? BLACK : CREAM} />
+                <path d={ringPath(99, 107, a0, a1)} fill={dark ? RED : GREEN} />
+                <path d={ringPath(107, 162, a0, a1)} fill={dark ? BLACK : CREAM} />
+                <path d={ringPath(162, 170, a0, a1)} fill={dark ? RED : GREEN} />
+                <line x1={pt(15.9, a0)[0]} y1={pt(15.9, a0)[1]} x2={pt(170, a0)[0]} y2={pt(170, a0)[1]} stroke={WIRE} strokeWidth="0.7" />
+                <text
+                  transform={`rotate(${i * 18}) translate(0,-198)`}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fill="#fff"
+                  fontSize="22"
+                  fontWeight="700"
+                  fontFamily="system-ui, sans-serif"
+                >
+                  {n}
+                </text>
+              </g>
+            );
+          })}
+          {[170, 162, 107, 99].map((r) => <circle key={r} r={r} fill="none" stroke={WIRE} strokeWidth="0.8" />)}
+          <circle r="15.9" fill={GREEN} stroke={WIRE} strokeWidth="0.8" />
+          <circle r="6.35" fill={RED} stroke={WIRE} strokeWidth="0.8" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+/* ═════════ SIMPLE PAGE NAVIGATION (Privacy / Contact) ═════════ */
+const pageFromHash = () => {
+  const h = window.location.hash.replace("#", "");
+  return h === "privacy" || h === "contact" ? h : "";
+};
+const navigate = (page) => {
+  try {
+    window.history.pushState(null, "", page ? "#" + page : window.location.pathname + window.location.search);
+  } catch (e) {
+    window.location.hash = page;
+  }
+  window.dispatchEvent(new PopStateEvent("popstate"));
+};
+const linkProps = (page) => ({
+  href: page ? "#" + page : "#",
+  onClick: (e) => { e.preventDefault(); navigate(page); },
+});
+
 /* ═════════ FOOTER + INFO PAGES ═════════ */
 function Footer() {
   return (
-    <footer className="mt-12 border-t border-stone-800 px-4 py-8 text-center">
+    <footer className="relative z-10 mt-12 border-t border-stone-800 px-4 py-8 text-center">
       <div className="flex justify-center gap-6 text-lg font-bold text-emerald-400">
-        <a href="#privacy" className="hover:text-emerald-300">Privacy</a>
-        <a href="#contact" className="hover:text-emerald-300">Contact</a>
+        <a {...linkProps("privacy")} className="hover:text-emerald-300">Privacy</a>
+        <a {...linkProps("contact")} className="hover:text-emerald-300">Contact</a>
       </div>
       <p className="mx-auto mt-4 max-w-md text-sm text-stone-500">
         <span className="text-stone-200">© {new Date().getFullYear()} {SITE_NAME} //</span> All logos and brands are
@@ -359,7 +439,7 @@ function Footer() {
 function InfoPage({ title, children }) {
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8">
-      <a href="#" className="text-sm text-stone-400 hover:text-stone-100">← Back to {SITE_NAME}</a>
+      <a {...linkProps("")} className="relative z-10 rounded bg-stone-950/80 px-2 py-1 text-sm text-stone-300 hover:text-white">← Back to {SITE_NAME}</a>
       <h1 className="mt-4 text-3xl font-black">{title}</h1>
       <div className="mt-4 space-y-4 text-stone-300">{children}</div>
     </div>
@@ -461,29 +541,31 @@ function Contact() {
 export default function App() {
   const [screen, setScreen] = useState("menu"); // "menu" | "questions" | "game"
   const [question, setQuestion] = useState(null);
-  const [hash, setHash] = useState(window.location.hash);
+  const [page, setPage] = useState(pageFromHash);
 
   // Footer links use #privacy and #contact so each page has its own web address
   useEffect(() => {
-    const onHash = () => { setHash(window.location.hash); window.scrollTo(0, 0); };
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    const sync = () => { setPage(pageFromHash()); window.scrollTo(0, 0); };
+    window.addEventListener("popstate", sync);
+    window.addEventListener("hashchange", sync);
+    return () => { window.removeEventListener("popstate", sync); window.removeEventListener("hashchange", sync); };
   }, []);
 
   const back = () => setScreen(screen === "game" ? "questions" : "menu");
 
   return (
-    <div className="flex min-h-screen flex-col bg-stone-950 text-stone-100">
-      <main className="flex-1">
-        {hash === "#privacy" ? (
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-stone-950 text-stone-100">
+      <Dartboard />
+      <main className="relative z-10 flex-1">
+        {page === "privacy" ? (
           <Privacy />
-        ) : hash === "#contact" ? (
+        ) : page === "contact" ? (
           <Contact />
         ) : (
           <>
             {screen !== "menu" && (
               <header className="border-b border-stone-800 px-4 py-3">
-                <button onClick={back} className="text-sm text-stone-400 hover:text-stone-100">← Back</button>
+                <button onClick={back} className="rounded bg-stone-950/80 px-2 py-1 text-sm text-stone-300 hover:text-white">← Back</button>
               </header>
             )}
             {screen === "menu" && <MainMenu onPlay={() => setScreen("questions")} />}
