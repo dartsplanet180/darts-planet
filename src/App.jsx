@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 /* ═════════ SITE SETTINGS – change these ═════════ */
-const SITE_NAME = "DartsPlanet";
+const SITE_NAME = "ONEEIGHTY.GAMES";
 const CONTACT_EMAIL = "dartsplanet180@gmail.com";
 
 /* ═════════ 1. PLAYERS (used for autocomplete) ═════════
@@ -323,7 +323,7 @@ function Card({ title, sub, onClick, disabled }) {
 function MainMenu({ onPlay }) {
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-10">
-      <h1 className="text-center text-4xl font-black tracking-tight">Darts<span className="text-red-500">Planet</span></h1>
+      <h1 className="text-center text-4xl font-black tracking-tight">ONEEIGHTY<span className="text-red-500">.GAMES</span></h1>
       <p className="mt-2 text-center text-stone-400">Pick a game to start.</p>
       <div className="mt-8 space-y-3">
         {GAMES.map((g) => (
@@ -360,14 +360,13 @@ const ringPath = (r1, r2, a0, a1) => {
 };
 
 function Dartboard() {
-  // Board centre sits on the page corner, so only one quarter is visible. It turns very slowly.
-  const still = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  // Board centre sits on the page corner, so only one quarter is visible. It turns once every 60 seconds (change dur="60s" to speed up or slow down).
   const BLACK = "#0c0c0c", CREAM = "#efe3c4", RED = "#dc2626", GREEN = "#16a34a", WIRE = "#d6d3d1";
   return (
     <div aria-hidden="true" className="pointer-events-none absolute left-0 top-0 z-0 h-28 w-28 sm:h-44 sm:w-44 md:h-56 md:w-56">
       <svg viewBox="0 0 235 235" className="h-full w-full">
         <g>
-          {!still && <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="180s" repeatCount="indefinite" />}
+          <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="60s" repeatCount="indefinite" />
           <circle r="232" fill="#e7e5e4" />
           <circle r="226" fill={BLACK} />
           {BOARD_ORDER.map((n, i) => {
