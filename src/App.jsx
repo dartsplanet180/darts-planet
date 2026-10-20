@@ -36,7 +36,7 @@ const PLAYERS = [
   "Toon Greebe", "Michael van Gerwen", "Mervyn King", "Michael Rosenaur", "Akihiro Nagakawa",
   "Miloslav Navrátil", "Rizal S Barellano Jr", "Jamie Caven", "Jason Barry", "Kirk Shepherd",
   "Steve (ENG) Brown", "Ashfaque Sayed", "Alan Bolton", "Tony Eccles", "Leroy Kwadijk",
-  "Jelle Klaasen", "Vincent van der Voort", "Mensur Suljovic", "Steve Evans", "Dan Olson",
+  "Jelle Klaasen", "Vincent van der Voort", "Mensur Suljović", "Steve Evans", "Dan Olson",
   "Steve MacArthur", "Charles Losper", "Carlos Rodriguez", "Robert Thornton", "Co Stompé",
   "Hannes Schnier", "David Fatum", "Shane O’Connor", "Felix McBrearty", "Steve Grubb",
   "Kevin McDine", "Sudesh Fitzgerald", "Remco van Eijden", "Anastasia Dobromyslova",
@@ -105,7 +105,7 @@ const PLAYERS = [
   "Oskar Lukasiak", "Lukas Wenig", "Darren Beveridge", "Tavis Dudeney", "Charlie Manby",
   "Andy Baetens", "Adam Lipscombe", "Teemu Harju", "Justin Hood", "Jurjen van der Velde",
   "Adam Sevada", "Patrik Kovacs", "Motomu Sakai", "David Munyua", "Dominik Gruellich",
-  "Mitsuhiko Tatsunami", "Matthew Dennant", "Jesus Salate", "Gemma Hayter", "Tim Pusey",
+  "Mitsuhiko Tatsunami", "Matthew Dennant", "Jesus Salate", "Gemma Hayter", "Tim Pusey", "Henry Coates", "Jimmy van Schie",
 ];
 
 /* ═════════ 2. QUESTIONS (one per day) ═════════
@@ -118,7 +118,7 @@ const PLAYERS = [
    until that date arrives. */
 const QUESTIONS = [
   {
-    date: "2026-10-15",
+    date: "2026-10-20",
     title: "2015 Premier League of Darts lineup",
     answers: [
       "Michael van Gerwen", "Phil Taylor", "Gary Anderson", "Adrian Lewis", "Peter Wright",
@@ -126,11 +126,27 @@ const QUESTIONS = [
     ],
   },
   {
-    date: "2026-10-16",
+    date: "2026-10-21",
     title: "Last 10 players to lose a PDC World Championship semi-final",
     answers: [
       "Ryan Searle", "Gary Anderson", "Chris Dobey", "Stephen Bunting", "Rob Cross",
       "Scott Williams", "Gabriel Clemens", "Dimitri Van den Bergh", "James Wade", "Dave Chisnall",
+    ],
+  },
+  {
+    date: "2026-10-19",
+    title: "Last 10 PDC European Tour winners",
+    answers: [
+      "Niels Zonneveld", "Jonny Clayton", "James Wade", "Luke Littler", "Ross Smith",
+      "Krzysztof Ratajski", "Wessel Nijman", "Luke Woodhouse", "Josh Rock", "Gerwyn Price",
+    ],
+  },
+  {
+    date: "2026-10-22",
+    title: "Highest checkout % since AFTER the 2026 PDC World Darts Championship in PDC TV Ranking events (Min 20 throws)",
+    answers: [
+      "Callan Rydz", "Mensur Suljović", "Ron Meulenkamp", "Beau Greaves", "Henry Coates",
+      "Jeffrey de Graaf", "Jimmy van Schie", "Ryan Joyce", "Christian Kist", "Stefan Bellmont",
     ],
   },
 ];
@@ -206,6 +222,8 @@ function TopTen({ q, onBack }) {
   const [tried, setTried] = useState(new Set());
   const [lives, setLives] = useState(3);
   const [msg, setMsg] = useState(null);
+  const [revealed, setRevealed] = useState(false); // answers shown after a loss
+  const [closed, setClosed] = useState(false); // end-of-game popup dismissed
 
   const total = q.answers.length; // 10
   const won = found.size === total;
@@ -242,7 +260,7 @@ function TopTen({ q, onBack }) {
       <ol className="mt-4 space-y-1.5">
         {q.answers.map((name, i) => {
           const isFound = found.has(name);
-          const missed = lost && !isFound;
+          const missed = lost && revealed && !isFound;
           return (
             <li
               key={name}
@@ -269,29 +287,56 @@ function TopTen({ q, onBack }) {
         <SearchBox onPick={guess} disabled={over} exclude={tried} />
       </div>
 
-      {over && (
-        <div className={perfect ? "fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" : ""}>
-        <div
-          className={
-            perfect
-              ? "w-full max-w-sm rounded-2xl border-2 border-amber-400 bg-stone-900 p-8 text-center shadow-2xl"
-              : "mt-5 rounded-lg bg-stone-800 p-4 text-center"
-          }
-        >
-          {perfect ? (
-            <>
-              <p className="text-5xl font-black text-amber-400">🎯 Whitewash!</p>
-              <p className="mt-1 text-stone-300">All {total} correct without a single miss.</p>
-            </>
-          ) : (
-            <p className="text-xl font-bold">
-              {won ? `Game shot – all ${total} found!` : `Game over – you got ${found.size} of ${total}.`}
-            </p>
-          )}
-          <button onClick={onBack} className="mt-3 rounded-lg bg-emerald-600 px-5 py-2 font-semibold text-white hover:bg-emerald-500">
+      {over && !closed && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div
+            className={`w-full max-w-sm rounded-2xl border-2 bg-stone-900 p-8 text-center shadow-2xl ${
+              perfect ? "border-amber-400" : won ? "border-emerald-500" : "border-red-500"
+            }`}
+          >
+            {perfect ? (
+              <>
+                <p className="text-5xl font-black text-amber-400">🎯 Whitewash!</p>
+                <p className="mt-2 text-stone-300">{total}/{total} without losing a single life.</p>
+              </>
+            ) : won ? (
+              <>
+                <p className="text-4xl font-black text-emerald-400">You win!</p>
+                <p className="mt-2 text-stone-300">You got {found.size}/{total}.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-4xl font-black text-red-400">Game over</p>
+                <p className="mt-2 text-stone-300">You got {found.size}/{total}.</p>
+              </>
+            )}
+
+            <div className="mt-6 flex flex-col gap-2">
+              {lost ? (
+                <button
+                  onClick={() => { setRevealed(true); setClosed(true); }}
+                  className="rounded-lg bg-red-600 px-5 py-2.5 font-semibold text-white hover:bg-red-500"
+                >
+                  Reveal answers
+                </button>
+              ) : (
+                <button onClick={() => setClosed(true)} className="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white hover:bg-emerald-500">
+                  View board
+                </button>
+              )}
+              <button onClick={onBack} className="rounded-lg border border-stone-600 px-5 py-2 font-semibold text-stone-300 hover:bg-stone-800">
+                Back to questions
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {over && closed && (
+        <div className="mt-5 text-center">
+          <button onClick={onBack} className="rounded-lg bg-emerald-600 px-5 py-2 font-semibold text-white hover:bg-emerald-500">
             Back to questions
           </button>
-        </div>
         </div>
       )}
     </div>
@@ -299,8 +344,161 @@ function TopTen({ q, onBack }) {
 }
 
 /* ═════════ MENUS ═════════ */
+/* ═════════ HIGHER OR LOWER – ORDER OF MERIT DATA ═════════
+   Players in order, rank 1 → 150. A leading "=" means the SAME rank as the
+   player above (a tie). Update LAST_UPDATED and this list whenever the
+   Order of Merit changes. */
+const LAST_UPDATED = "As of: October 18, 2026. Updated after ET15.";
+const OOM_RAW = [
+  "Luke Littler", "Luke Humphries", "Gian van Veen", "Gerwyn Price", "Jonny Clayton",
+  "James Wade", "Danny Noppert", "Josh Rock", "Gary Anderson", "Michael van Gerwen",
+  "Nathan Aspinall", "Wessel Nijman", "Stephen Bunting", "Ross Smith", "Ryan Searle",
+  "Jermaine Wattimena", "Chris Dobey", "Luke Woodhouse", "Krzysztof Ratajski", "Dirk van Duijvenbode",
+  "Damon Heta", "Rob Cross", "Martin Schindler", "Ryan Joyce", "Cameron Menzies",
+  "Kevin Doets", "Andrew Gilding", "Niels Zonneveld", "Daryl Gurney", "Dave Chisnall",
+  "Joe Cullen", "William O'Connor", "Ritchie Edhouse", "Mike De Decker", "Ricardo Pietreczko",
+  "Niko Springer", "Michael Smith", "Peter Wright", "Callan Rydz", "=Justin Hood",
+  "Jeffrey de Graaf", "Mickey Mansell", "Martin Lukeman", "Karel Sedlacek", "Raymond van Barneveld",
+  "James Hurrell", "Madars Razma", "Scott Williams", "Gabriel Clemens", "Connor Scutt",
+  "Brendan Dolan", "Sebastian Bialecki", "Ricky Evans", "Mensur Suljovic", "Kim Huybrechts",
+  "Keane Barry", "Ian White", "Richard Veenstra", "Dimitri Van den Bergh", "Bradley Brooks",
+  "Alan Soutar", "Rob Owen", "Ryan Meikle", "Lukas Wenig", "Nick Kenny",
+  "Max Hopp", "Mario Vandenbogaerde", "Cam Crabtree", "Thibault Tricole", "Cristo Reyes",
+  "Wesley Plaisier", "Maik Kuivenhoven", "Adam Lipscombe", "Tom Bissell", "Beau Greaves",
+  "Darryl Pilgrim", "Cor Dekker", "Dominik Gruellich", "Christian Kist", "Tom Sykes",
+  "Andy Boulton", "Jim Long", "Charlie Manby", "=Oskar Lukasiak", "Joe Hunt",
+  "Jimmy van Schie", "Thomas Lovely", "Leon Weber", "Darius Labanauskas", "Marvin van Velzen",
+  "Tavis Dudeney", "Viktor Tingstrom", "Shane McGuirk", "Alexander Merkx", "Henry Coates",
+  "Adam Gawlas", "Kai Gotthardt", "Adam Paxton", "Greg Ritchie", "Owen Bates",
+  "David Sharp", "Jeffrey De Zwaan", "Mervyn King", "Adam Warner", "Jurjen van der Velde",
+  "Martijn Dragt", "Stephen Burton", "Dennie Olde Kalter", "Chris Landman", "Benjamin Pratnemer",
+  "Tommy Morris", "Jeffrey Sparidaans", "Tyler Thorpe", "Sietse Lap", "Tommy Lishman",
+  "Niall Culleton", "Scott Waites", "Jack Tweddell", "Arno Merk", "Stefan Bellmont",
+  "=Maximilian Czerwinski", "Rhys Griffin", "=Adam Leek", "Derek Coulson", "Steve Lennon",
+  "Stephen Rosney", "Stefaan Henderyck", "Tytus Kanik", "Harry Ward", "Samuel Price",
+  "Carl Sneyd", "Nathan Potter", "Daniel Ayres", "Yorick Hofkens", "Pascal Rupprecht",
+  "Andy Baetens", "Daniel Klose", "Lewis Pride", "Rusty-Jake Rodriguez", "Marvin Kraft",
+  "=Paul Krohne", "Boris Krcmar", "Jonas Masalin", "=Michael Unterbuchner", "Jan Schmidt",
+  "=Patrik Kovacs", "Pero Ljubic", "Christopher Wickenden", "Johan Engstrom", "Nandor Major",
+  "=Dragutin Horvat", "=Marcel Hausotter",
+];
+const OOM = (() => {
+  let rank = 0;
+  return OOM_RAW.map((n, i) => {
+    const tie = n.startsWith("=");
+    if (!tie) rank = i + 1;
+    return { name: tie ? n.slice(1) : n, rank };
+  });
+})();
+
+/* ═════════ HIGHER OR LOWER – THE GAME ═════════ */
+const randomFrom = (exclude) => {
+  let pool = OOM.filter((p) => !exclude.includes(p.name));
+  if (pool.length === 0) pool = OOM;
+  return pool[Math.floor(Math.random() * pool.length)];
+};
+
+const newGame = () => {
+  const a = randomFrom([]);
+  const b = randomFrom([a.name]);
+  return { a, b, used: [a.name, b.name], score: 0, picked: null };
+};
+
+const loadBest = () => { try { return Number(localStorage.getItem("oom-best")) || 0; } catch { return 0; } };
+const saveBest = (n) => { try { localStorage.setItem("oom-best", String(n)); } catch { /* ignore */ } };
+
+function PlayerCard({ player, showRank, state }) {
+  const border = state === "right" ? "border-emerald-500" : state === "wrong" ? "border-red-500" : "border-stone-700";
+  return (
+    <div className={`flex-1 rounded-2xl border-2 bg-stone-900 p-4 text-center ${border}`}>
+      <p className="min-h-[3rem] text-lg font-bold leading-tight sm:text-xl">{player.name}</p>
+      <p className="mt-3 text-xs uppercase tracking-widest text-stone-500">Order of Merit</p>
+      <p className={`text-5xl font-black ${showRank ? "text-amber-400" : "text-stone-600"}`}>{showRank ? `#${player.rank}` : "?"}</p>
+    </div>
+  );
+}
+
+function HigherLower({ onBack }) {
+  const [game, setGame] = useState(newGame);
+  const [best, setBest] = useState(loadBest);
+  const { a, b, score, picked } = game;
+  const over = picked && !picked.correct;
+
+  const guess = (g) => {
+    if (picked) return;
+    // "Higher" = ranked higher in the table (closer to #1). Equal ranks always count as correct.
+    const correct = b.rank === a.rank || (g === "higher" ? b.rank < a.rank : b.rank > a.rank);
+    const newScore = correct ? score + 1 : score;
+    if (newScore > best) { setBest(newScore); saveBest(newScore); }
+    setGame((s) => ({ ...s, picked: { g, correct }, score: newScore }));
+  };
+
+  const next = () => {
+    setGame((s) => {
+      const c = randomFrom(s.used);
+      return { a: s.b, b: c, used: [...s.used, c.name], score: s.score, picked: null };
+    });
+  };
+
+  return (
+    <div className="mx-auto w-full max-w-xl px-4 py-6">
+      <h1 className="text-center text-3xl font-black">Higher or Lower</h1>
+      <p className="mt-1 text-center text-sm font-semibold text-amber-400">{LAST_UPDATED}</p>
+      <p className="mt-3 text-center text-stone-400">
+        Is the player on the right ranked <b className="text-stone-200">higher</b> or <b className="text-stone-200">lower</b> than the player on the left in the PDC Order of Merit?
+      </p>
+
+      <div className="mt-4 flex justify-between font-semibold">
+        <span className="text-emerald-400">Streak: {score}</span>
+        <span className="text-stone-400">Best: {best}</span>
+      </div>
+
+      <div className="mt-3 flex items-stretch gap-3">
+        <PlayerCard player={a} showRank />
+        <PlayerCard player={b} showRank={!!picked} state={picked ? (picked.correct ? "right" : "wrong") : undefined} />
+      </div>
+
+      <div className="mt-5 min-h-[1.5rem] text-center font-medium" role="status">
+        {picked?.correct && (
+          <span className="text-emerald-400">
+            {b.rank === a.rank ? "Same rank – counts as correct!" : "Correct!"}
+          </span>
+        )}
+      </div>
+
+      {!picked && (
+        <div className="mt-2 grid grid-cols-2 gap-3">
+          <button onClick={() => guess("higher")} className="rounded-xl bg-emerald-600 px-4 py-4 text-lg font-bold text-white hover:bg-emerald-500">▲ Higher</button>
+          <button onClick={() => guess("lower")} className="rounded-xl bg-red-600 px-4 py-4 text-lg font-bold text-white hover:bg-red-500">▼ Lower</button>
+        </div>
+      )}
+
+      {picked?.correct && (
+        <button onClick={next} className="mt-2 w-full rounded-xl bg-emerald-600 px-4 py-4 text-lg font-bold text-white hover:bg-emerald-500">Next player →</button>
+      )}
+
+      {over && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-sm rounded-2xl border-2 border-red-500 bg-stone-900 p-8 text-center shadow-2xl">
+            <p className="text-4xl font-black text-red-400">Game over</p>
+            <p className="mt-2 text-stone-300">
+              {b.name} is #{b.rank}, {a.name} is #{a.rank}.
+            </p>
+            <p className="mt-2 text-xl font-bold">Your streak: {score}</p>
+            <div className="mt-6 flex flex-col gap-2">
+              <button onClick={() => setGame(newGame())} className="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white hover:bg-emerald-500">Play again</button>
+              <button onClick={onBack} className="rounded-lg border border-stone-600 px-5 py-2 font-semibold text-stone-300 hover:bg-stone-800">Back to menu</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const GAMES = [
   { id: "top-10", name: "The Top 10", blurb: "Name all 10. Three lives. No misses = a whitewash!", live: true },
+  { id: "higher-lower", name: "Higher or Lower", blurb: "Order of Merit: is the next player ranked higher or lower?", live: true },
   { id: "commentary", name: "Guess the Commentary", blurb: "Coming soon", live: false },
   { id: "soon", name: "Coming soon", blurb: "Another game is on its way", live: false },
 ];
@@ -567,8 +765,9 @@ export default function App() {
                 <button onClick={back} className="rounded bg-stone-950/80 px-2 py-1 text-sm text-stone-300 hover:text-white">← Back</button>
               </header>
             )}
-            {screen === "menu" && <MainMenu onPlay={() => setScreen("questions")} />}
+            {screen === "menu" && <MainMenu onPlay={(id) => setScreen(id === "higher-lower" ? "higherlower" : "questions")} />}
             {screen === "questions" && <QuestionMenu onPick={(q) => { setQuestion(q); setScreen("game"); }} />}
+            {screen === "higherlower" && <HigherLower onBack={() => setScreen("menu")} />}
             {screen === "game" && <TopTen key={question.date} q={question} onBack={() => setScreen("questions")} />}
           </>
         )}
