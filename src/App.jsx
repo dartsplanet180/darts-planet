@@ -105,7 +105,7 @@ const PLAYERS = [
   "Oskar Lukasiak", "Lukas Wenig", "Darren Beveridge", "Tavis Dudeney", "Charlie Manby",
   "Andy Baetens", "Adam Lipscombe", "Teemu Harju", "Justin Hood", "Jurjen van der Velde",
   "Adam Sevada", "Patrik Kovacs", "Motomu Sakai", "David Munyua", "Dominik Gruellich",
-  "Mitsuhiko Tatsunami", "Matthew Dennant", "Jesus Salate", "Gemma Hayter", "Tim Pusey", "Henry Coates", "Jimmy van Schie",
+  "Mitsuhiko Tatsunami", "Matthew Dennant", "Jesus Salate", "Gemma Hayter", "Tim Pusey", "Darryl Pilgrim", "Henry Coates", "Jimmy van Schie",
 ];
 
 /* ═════════ 2. QUESTIONS (one per day) ═════════
@@ -143,10 +143,10 @@ const QUESTIONS = [
   },
   {
     date: "2026-10-21",
-    title: "Highest checkout % since AFTER the 2026 PDC World Darts Championship in PDC TV Ranking events (Min 20 throws)",
+    title: "Highest checkout % since AFTER the 2026 PDC World Darts Championship in PDC TV Ranking events (Min 90 throws)",
     answers: [
-      "Callan Rydz", "Mensur Suljović", "Ron Meulenkamp", "Beau Greaves", "Henry Coates",
-      "Jeffrey de Graaf", "Jimmy van Schie", "Ryan Joyce", "Christian Kist", "Stefan Bellmont",
+      "Ryan Joyce", "Jonny Clayton", "Gian van Veen", "Gerwyn Price", "Wessel Nijman",
+      "Gary Anderson", "Martin Lukeman", "Darryl Pilgrim", "Keane Barry", "Luke Littler",
     ],
   },
   {
