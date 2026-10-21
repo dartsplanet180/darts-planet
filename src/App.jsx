@@ -126,7 +126,7 @@ const QUESTIONS = [
     ],
   },
   {
-    date: "2026-10-21",
+    date: "2026-10-28",
     title: "Last 10 players to lose a PDC World Championship semi-final",
     answers: [
       "Ryan Searle", "Gary Anderson", "Chris Dobey", "Stephen Bunting", "Rob Cross",
@@ -142,11 +142,27 @@ const QUESTIONS = [
     ],
   },
   {
-    date: "2026-10-22",
+    date: "2026-10-21",
     title: "Highest checkout % since AFTER the 2026 PDC World Darts Championship in PDC TV Ranking events (Min 20 throws)",
     answers: [
       "Callan Rydz", "Mensur Suljović", "Ron Meulenkamp", "Beau Greaves", "Henry Coates",
       "Jeffrey de Graaf", "Jimmy van Schie", "Ryan Joyce", "Christian Kist", "Stefan Bellmont",
+    ],
+  },
+  {
+    date: "2026-10-22",
+    title: "All winners of the PDC European Darts Championship",
+    answers: [
+      "Gian van Veen", "Ritchie Edhouse", "Peter Wright", "Ross Smith", "Rob Cross",
+      "James Wade", "Michael van Gerwen", "Adrian Lewis", "Simon Whitlock", "Phil Taylor",
+    ],
+  },
+  {
+    date: "2026-10-27",
+    title: "Players with the most 140s recorded the last 365 days in PDC televised ranking events",
+    answers: [
+      "Luke Littler", "Gerwyn Price", "Luke Humphries", "Gian van Veen", "James Wade",
+      "Gary Anderson", "Josh Rock", "Jonny Clayton", "Nathan Aspinall", "Danny Noppert",
     ],
   },
 ];
@@ -648,7 +664,7 @@ function Privacy() {
   const mail = <a className="text-emerald-400 underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>;
   return (
     <InfoPage title="Privacy Policy">
-      <p className="text-sm text-stone-500">Last updated: 14 October 2026</p>
+      <p className="text-sm text-stone-500">Last updated: 21 October 2026</p>
       <p>
         This Privacy Policy explains how {SITE_NAME} ("we", "us", "the site") handles information when you visit and
         play our free darts trivia games. By using the site you agree to this policy.
@@ -674,9 +690,11 @@ function Privacy() {
 
       <H>Cookies and similar technologies</H>
       <p>
-        The site itself does not set cookies. However, third parties we use, such as advertising and analytics
-        providers, may use cookies, local storage, device identifiers or similar technologies to operate their
-        services. You can control or delete cookies in your browser settings.
+        The site itself does not set cookies. It does save your best Higher or Lower streak in your browser's local
+        storage so it is still there next time you play. This stays on your own device and is not sent to us; you can
+        clear it at any time in your browser settings. Third parties we use, such as advertising providers, may use
+        cookies, local storage, device identifiers or similar technologies to operate their services. You can control
+        or delete cookies in your browser settings.
       </p>
 
       <H>Advertising</H>
@@ -691,8 +709,12 @@ function Privacy() {
 
       <H>Analytics</H>
       <p>
-        We may use analytics tools to measure how many people visit the site and which games are played. This
-        information is aggregated and used to improve the site.
+        We use the web analytics provided by our hosting provider, Netlify, to measure how many people visit the site,
+        which pages are viewed and roughly where visitors are located. This data comes from server logs, so no
+        tracking code or cookies are placed on your device, and we cannot identify you from it. To count visitors,
+        Netlify may process technical data such as IP addresses, which is used only to produce aggregated statistics.
+        You can read more in Netlify's privacy policy at netlify.com/privacy. The information is used to understand
+        how the site is used and to improve it.
       </p>
 
       <H>Third-party links and logos</H>
