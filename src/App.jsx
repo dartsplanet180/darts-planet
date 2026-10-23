@@ -165,6 +165,14 @@ const QUESTIONS = [
       "Gary Anderson", "Josh Rock", "Jonny Clayton", "Nathan Aspinall", "Danny Noppert",
     ],
   },
+  {
+    date: "2026-10-23",
+    title: "Highest averages from the first day of the 2026 European Darts Championship",
+    answers: [
+      "Kim Huybrechts", "Gerwyn Price", "Luke Woodhouse", "Ryan Searle", "James Wade",
+      "Gian van Veen", "Cameron Menzies", "Andrew Gilding", "Damon Heta", "Ross Smith",
+    ],
+  },
 ];
 
 /* ═════════ HELPERS ═════════ */
