@@ -175,7 +175,7 @@ const QUESTIONS = [
   },
   {
     date: "2026-10-25",
-    title: "Last 10 players to beat Littler in televised PDC events (not including World Masters or the Premier League)",
+    title: "Last 10 players to beat Littler in televised PDC events (not including World Masters or the Premier League) (after the morning session)",
     answers: [
       "Krzysztof Ratajski", "Luke Woodhouse", "Jonny Clayton", "Niels Zonneveld", "James Wade",
       "Danny Noppert", "Gian van Veen", "Luke Humphries", "Andrew Gilding", "Rob Cross",
