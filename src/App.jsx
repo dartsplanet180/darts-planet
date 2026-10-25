@@ -173,6 +173,14 @@ const QUESTIONS = [
       "Gian van Veen", "Cameron Menzies", "Andrew Gilding", "Damon Heta", "Ross Smith",
     ],
   },
+  {
+    date: "2026-10-25",
+    title: "Last 10 players to beat Littler in televised PDC events (not including World Masters or the Premier League)",
+    answers: [
+      "Krzysztof Ratajski", "Luke Woodhouse", "Jonny Clayton", "Niels Zonneveld", "James Wade",
+      "Danny Noppert", "Gian van Veen", "Luke Humphries", "Andrew Gilding", "Rob Cross",
+    ],
+  },
 ];
 
 /* ═════════ HELPERS ═════════ */
