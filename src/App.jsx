@@ -189,6 +189,14 @@ const QUESTIONS = [
       "Michael van Gerwen", "Gerwyn Price", "Simon Whitlock", "Rob Cross", "Mensur Suljović",
     ],
   },
+  {
+    date: "2026-10-30",
+    title: "Last 10 winners of a PDC Players Championship",
+    answers: [
+      "Chris Dobey", "Charlie Manby", "Karel Sedlacek", "Cameron Menzies", "Luke Humphries",
+      "Jermaine Wattimena", "Sebastian Bialecki", "Henry Coates", "Gabriel Clemens", "Rob Cross",
+    ],
+  },
 ];
 
 /* ═════════ HELPERS ═════════ */
@@ -197,7 +205,7 @@ const formatDate = (iso) =>
   new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
 /* ═════════ AUTOCOMPLETE ═════════ */
-function SearchBox({ onPick, disabled, exclude }) {
+function SearchBox({ onPick, disabled, exclude, options = PLAYERS }) {
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
   const [hi, setHi] = useState(0);
@@ -206,8 +214,8 @@ function SearchBox({ onPick, disabled, exclude }) {
   const matches = useMemo(() => {
     const t = norm(text.trim());
     if (!t) return [];
-    return PLAYERS.filter((n) => !exclude.has(n) && norm(n).includes(t)).slice(0, 6);
-  }, [text, exclude]);
+    return options.filter((n) => !exclude.has(n) && norm(n).includes(t)).slice(0, 6);
+  }, [text, exclude, options]);
 
   const pick = (name) => {
     if (!name) return;
@@ -388,35 +396,35 @@ function TopTen({ q, onBack }) {
    Players in order, rank 1 → 150. A leading "=" means the SAME rank as the
    player above (a tie). Update LAST_UPDATED and this list whenever the
    Order of Merit changes. */
-const LAST_UPDATED = "As of: October 25, 2026. Updated after the European Championship.";
+const LAST_UPDATED = "As of: October 29, 2026. Updated after PC32.";
 const OOM_RAW = [
   "Luke Littler", "Gian van Veen", "Luke Humphries", "Gerwyn Price", "Jonny Clayton", "Ross Smith",
-  "James Wade", "Josh Rock", "Stephen Bunting", "Nathan Aspinall", "Danny Noppert",
-  "Wessel Nijman", "Michael van Gerwen", "Gary Anderson", "Ryan Searle", "Chris Dobey",
+  "James Wade", "Josh Rock", "Nathan Aspinall", "Stephen Bunting", "Danny Noppert",
+  "Michael van Gerwen", "Wessel Nijman", "Gary Anderson", "Ryan Searle", "Chris Dobey",
   "Luke Woodhouse", "Jermaine Wattimena", "Krzysztof Ratajski", "Martin Schindler", "Damon Heta",
-  "Dirk van Duijvenbode", "Cameron Menzies", "=Rob Cross", "Ryan Joyce", "Kevin Doets",
-  "Andrew Gilding", "Niels Zonneveld", "Daryl Gurney", "William O'Connor", "Dave Chisnall",
-  "Joe Cullen", "Mike De Decker", "Niko Springer", "Peter Wright", "Michael Smith",
-  "Ricardo Pietreczko", "Callan Rydz", "=Justin Hood", "Jeffrey de Graaf", "Mickey Mansell",
-  "Karel Sedlacek", "Martin Lukeman", "James Hurrell", "Madars Razma", "Kim Huybrechts",
-  "Scott Williams", "Raymond van Barneveld", "Connor Scutt", "Brendan Dolan", "Sebastian Bialecki",
-  "Ricky Evans", "Gabriel Clemens", "Mensur Suljovic", "Ritchie Edhouse", "Keane Barry",
+  "Dirk van Duijvenbode", "Kevin Doets", "Rob Cross", "Ryan Joyce", "Cameron Menzies",
+  "Andrew Gilding", "Niels Zonneveld", "Dave Chisnall", "William O'Connor", "Daryl Gurney",
+  "Joe Cullen", "Mike De Decker", "Niko Springer", "Peter Wright", "Ricardo Pietreczko",
+  "Michael Smith", "Justin Hood", "Jeffrey de Graaf", "Karel Sedlacek", "=Callan Rydz",
+  "Mickey Mansell", "Martin Lukeman", "Scott Williams", "James Hurrell", "Kim Huybrechts",
+  "Madars Razma", "Brendan Dolan", "Raymond van Barneveld", "Connor Scutt", "Sebastian Bialecki",
+  "Ricky Evans", "Gabriel Clemens", "Ritchie Edhouse", "Mensur Suljovic", "Keane Barry",
   "Ian White", "Richard Veenstra", "Dimitri Van den Bergh", "Bradley Brooks", "Alan Soutar",
-  "Rob Owen", "Ryan Meikle", "Lukas Wenig", "Nick Kenny", "Max Hopp", "Mario Vandenbogaerde",
-  "Cristo Reyes", "Cam Crabtree", "Thibault Tricole", "Wesley Plaisier", "Maik Kuivenhoven",
-  "Adam Lipscombe", "Tom Bissell", "Beau Greaves", "Darryl Pilgrim", "Cor Dekker",
-  "Dominik Gruellich", "Christian Kist", "Tom Sykes", "Andy Boulton", "Jim Long", "Charlie Manby",
-  "=Oskar Lukasiak", "Joe Hunt", "Jimmy van Schie", "Thomas Lovely", "Leon Weber",
-  "Darius Labanauskas", "Marvin van Velzen", "Tavis Dudeney", "Viktor Tingstrom", "Shane McGuirk",
-  "Alexander Merkx", "Henry Coates", "Adam Gawlas", "Kai Gotthardt", "Adam Paxton", "Greg Ritchie",
-  "Owen Bates", "David Sharp", "Jeffrey De Zwaan", "Mervyn King", "Adam Warner",
-  "Jurjen van der Velde", "Martijn Dragt", "Stephen Burton", "Dennie Olde Kalter", "Chris Landman",
-  "Benjamin Pratnemer", "Tommy Morris", "Jeffrey Sparidaans", "Tyler Thorpe", "Sietse Lap",
-  "Tommy Lishman", "Niall Culleton", "Scott Waites", "Jack Tweddell", "Arno Merk",
-  "Stefan Bellmont", "=Maximilian Czerwinski", "Rhys Griffin", "=Adam Leek", "Derek Coulson",
-  "Steve Lennon", "Stephen Rosney", "Stefaan Henderyck", "Tytus Kanik", "Harry Ward",
-  "Samuel Price", "Carl Sneyd", "Nathan Potter", "Daniel Ayres", "Yorick Hofkens",
-  "Pascal Rupprecht", "Andy Baetens", "Daniel Klose", "Lewis Pride", "Rusty-Jake Rodriguez",
+  "Rob Owen", "Lukas Wenig", "Nick Kenny", "Ryan Meikle", "Max Hopp", "Mario Vandenbogaerde",
+  "Cristo Reyes", "Cam Crabtree", "Wesley Plaisier", "Maik Kuivenhoven", "Thibault Tricole",
+  "Tom Bissell", "Adam Lipscombe", "Beau Greaves", "Darryl Pilgrim", "Cor Dekker", "Charlie Manby",
+  "=Dominik Gruellich", "Christian Kist", "Tom Sykes", "Andy Boulton", "Jim Long",
+  "Oskar Lukasiak", "Joe Hunt", "Darius Labanauskas", "=Jimmy van Schie", "Thomas Lovely",
+  "Leon Weber", "Tommy Morris", "Viktor Tingstrom", "=Marvin van Velzen", "Tavis Dudeney",
+  "Alexander Merkx", "=Shane McGuirk", "Henry Coates", "Owen Bates", "=Adam Gawlas",
+  "Greg Ritchie", "Kai Gotthardt", "Adam Paxton", "David Sharp", "Stephen Burton",
+  "Jurjen van der Velde", "Jeffrey De Zwaan", "Martijn Dragt", "Mervyn King", "Chris Landman",
+  "=Dennie Olde Kalter", "=Adam Warner", "Benjamin Pratnemer", "Jeffrey Sparidaans",
+  "Tyler Thorpe", "Tommy Lishman", "Niall Culleton", "Sietse Lap", "Scott Waites", "Jack Tweddell",
+  "Arno Merk", "Adam Leek", "=Stefan Bellmont", "Maximilian Czerwinski", "Rhys Griffin",
+  "Steve Lennon", "=Derek Coulson", "Stephen Rosney", "Nathan Potter", "Stefaan Henderyck",
+  "Tytus Kanik", "Carl Sneyd", "Harry Ward", "Samuel Price", "Daniel Klose", "Daniel Ayres",
+  "Yorick Hofkens", "Lewis Pride", "=Pascal Rupprecht", "Andy Baetens", "Rusty-Jake Rodriguez",
   "Marvin Kraft", "=Paul Krohne", "Boris Krcmar", "Jonas Masalin", "=Michael Unterbuchner",
   "Jan Schmidt", "=Patrik Kovacs", "Pero Ljubic", "Christopher Wickenden", "Johan Engstrom",
   "Nandor Major", "=Dragutin Horvat", "=Marcel Hausotter",
@@ -535,11 +543,257 @@ function HigherLower({ onBack }) {
   );
 }
 
+/* ═════════ GUESS THE PLAYER (daily mystery player) ═════════
+   Add a player by adding "Name": "Country" below. His rank comes from the
+   Order of Merit list above (he must be in OOM_RAW with exactly this spelling). */
+const COUNTRY = {
+  "Luke Littler": "England", "Gian van Veen": "Netherlands", "Luke Humphries": "England",
+  "Gerwyn Price": "Wales", "Jonny Clayton": "Wales", "Ross Smith": "England",
+  "James Wade": "England", "Josh Rock": "N. Ireland", "Stephen Bunting": "England",
+  "Nathan Aspinall": "England", "Danny Noppert": "Netherlands", "Wessel Nijman": "Netherlands",
+  "Michael van Gerwen": "Netherlands", "Gary Anderson": "Scotland", "Ryan Searle": "England",
+  "Chris Dobey": "England", "Luke Woodhouse": "England", "Jermaine Wattimena": "Netherlands",
+  "Krzysztof Ratajski": "Poland", "Martin Schindler": "Germany", "Damon Heta": "Australia",
+  "Dirk van Duijvenbode": "Netherlands", "Cameron Menzies": "Scotland", "Rob Cross": "England",
+  "Ryan Joyce": "England", "Kevin Doets": "Netherlands", "Andrew Gilding": "England",
+  "Niels Zonneveld": "Netherlands", "Daryl Gurney": "N. Ireland", "William O'Connor": "Ireland",
+  "Dave Chisnall": "England", "Joe Cullen": "England", "Mike De Decker": "Belgium",
+  "Niko Springer": "Germany", "Peter Wright": "Scotland", "Michael Smith": "England",
+  "Ricardo Pietreczko": "Germany", "Callan Rydz": "England", "Justin Hood": "England",
+  "Jeffrey de Graaf": "Sweden", "Mickey Mansell": "Ireland", "Karel Sedlacek": "Czechia",
+  "Martin Lukeman": "England", "James Hurrell": "England", "Madars Razma": "Latvia",
+  "Kim Huybrechts": "Belgium", "Scott Williams": "England", "Raymond van Barneveld": "Netherlands",
+  "Connor Scutt": "England", "Brendan Dolan": "Ireland", "Sebastian Bialecki": "Poland",
+  "Ricky Evans": "England", "Gabriel Clemens": "Germany", "Mensur Suljovic": "Austria",
+  "Ritchie Edhouse": "England", "Keane Barry": "Ireland", "Ian White": "England",
+  "Richard Veenstra": "Netherlands", "Dimitri Van den Bergh": "Belgium", "Bradley Brooks": "England",
+  "Alan Soutar": "Scotland", "Rob Owen": "Wales",
+};
+const GP_POOL = OOM.filter((p) => COUNTRY[p.name]).map((p) => ({ ...p, country: COUNTRY[p.name] }));
+const GP_NAMES = GP_POOL.map((p) => p.name);
+const MAX_GUESSES = 8;
+
+const dailyTarget = () => {
+  const key = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
+  let h = 0;
+  for (const c of key) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return GP_POOL[h % GP_POOL.length];
+};
+const randomTarget = () => GP_POOL[Math.floor(Math.random() * GP_POOL.length)];
+
+const initialsOf = (name) => {
+  const [first, ...rest] = name.split(" ");
+  return [first[0].toUpperCase(), rest.join(" ")[0].toUpperCase()];
+};
+
+function compareGuess(g, t) {
+  const [gf, gs] = initialsOf(g.name);
+  const [tf, ts] = initialsOf(t.name);
+  return {
+    sameCountry: g.country === t.country,
+    rankDir: g.rank === t.rank ? "same" : t.rank < g.rank ? "up" : "down",
+    rankClose: Math.abs(g.rank - t.rank) <= 5,
+    initialHits: (gf === tf ? 1 : 0) + (gs === ts ? 1 : 0),
+    initials: `${gf}. ${gs}.`,
+  };
+}
+
+const chip = (level) =>
+  level === "good" ? "bg-emerald-700 text-white" : level === "close" ? "bg-amber-600 text-white" : "bg-stone-800 text-stone-300";
+
+function GuessPlayer({ onBack }) {
+  const [target, setTarget] = useState(dailyTarget);
+  const [daily, setDaily] = useState(true);
+  const [guesses, setGuesses] = useState([]);
+
+  const won = guesses.some((g) => g.name === target.name);
+  const lost = !won && guesses.length >= MAX_GUESSES;
+  const over = won || lost;
+
+  const guess = (name) => {
+    const p = GP_POOL.find((x) => x.name === name);
+    if (p) setGuesses((g) => [...g, p]);
+  };
+  const again = () => { setTarget(randomTarget()); setDaily(false); setGuesses([]); };
+
+  return (
+    <div className="mx-auto w-full max-w-xl px-4 py-6">
+      <h1 className="text-center text-3xl font-black">Guess the Player</h1>
+      <p className="mt-1 text-center text-sm font-semibold text-amber-400">{daily ? "Today's mystery player" : "Practice round"}</p>
+      <p className="mt-3 text-center text-stone-400">
+        A mystery player from the PDC Order of Merit top {GP_POOL.length}. You have {MAX_GUESSES} guesses.
+      </p>
+
+      <p className="mt-4 text-right text-sm font-semibold text-stone-400">Guesses: {guesses.length}/{MAX_GUESSES}</p>
+
+      <ul className="mt-2 space-y-2">
+        {guesses.map((g) => {
+          const c = compareGuess(g, target);
+          return (
+            <li key={g.name} className="rounded-xl border-2 border-stone-700 bg-stone-900 p-3">
+              <p className="font-bold">{g.name}</p>
+              <div className="mt-2 grid grid-cols-3 gap-2 text-center text-sm font-semibold">
+                <span className={`rounded-lg px-2 py-1.5 ${chip(c.sameCountry ? "good" : "none")}`}>{g.country}</span>
+                <span className={`rounded-lg px-2 py-1.5 ${chip(c.rankDir === "same" ? "good" : c.rankClose ? "close" : "none")}`}>
+                  #{g.rank} {c.rankDir === "same" ? "✓" : c.rankDir === "up" ? "▲" : "▼"}
+                </span>
+                <span className={`rounded-lg px-2 py-1.5 ${chip(c.initialHits === 2 ? "good" : c.initialHits === 1 ? "close" : "none")}`}>{c.initials}</span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="mt-4">
+        <SearchBox
+          onPick={guess}
+          disabled={over}
+          exclude={new Set(guesses.map((g) => g.name))}
+          options={GP_NAMES}
+        />
+      </div>
+
+      <div className="mt-4 rounded-lg bg-stone-900 p-3 text-sm text-stone-400">
+        <p><b className="text-stone-200">Country:</b> green if it matches.</p>
+        <p><b className="text-stone-200">Rank:</b> ▲ means the mystery player is ranked higher (closer to #1), ▼ lower. Amber = within 5 places.</p>
+        <p><b className="text-stone-200">Initials:</b> green = both match, amber = one matches.</p>
+      </div>
+
+      {over && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className={`w-full max-w-sm rounded-2xl border-2 bg-stone-900 p-8 text-center shadow-2xl ${won ? "border-emerald-500" : "border-red-500"}`}>
+            <p className={`text-4xl font-black ${won ? "text-emerald-400" : "text-red-400"}`}>{won ? "You got it!" : "Out of guesses"}</p>
+            <p className="mt-2 text-stone-300">
+              {won ? `The player was ${target.name}. You needed ${guesses.length} ${guesses.length === 1 ? "guess" : "guesses"}.` : `The player was ${target.name}.`}
+            </p>
+            <div className="mt-6 flex flex-col gap-2">
+              <button onClick={again} className="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white hover:bg-emerald-500">Play a random player</button>
+              <button onClick={onBack} className="rounded-lg border border-stone-600 px-5 py-2 font-semibold text-stone-300 hover:bg-stone-800">Back to menu</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═════════ LINE THEM UP ═════════
+   Five random players – tap them from highest to lowest in the Order of Merit.
+   Uses the same OOM_RAW list as Higher or Lower, so it updates with it. */
+const newLineup = () => [...OOM].sort(() => Math.random() - 0.5).slice(0, 5);
+const loadLineBest = () => { try { return Number(localStorage.getItem("lineup-best")) || 0; } catch { return 0; } };
+const saveLineBest = (n) => { try { localStorage.setItem("lineup-best", String(n)); } catch { /* ignore */ } };
+
+function LineUp({ onBack }) {
+  const [players, setPlayers] = useState(newLineup);
+  const [picked, setPicked] = useState([]); // names, in the order tapped
+  const [lives, setLives] = useState(3);
+  const [cleared, setCleared] = useState(0);
+  const [msg, setMsg] = useState(null);
+  const [best, setBest] = useState(loadLineBest);
+
+  const remaining = players.filter((p) => !picked.includes(p.name));
+  const done = remaining.length === 0;
+  const dead = lives === 0;
+
+  const tap = (p) => {
+    if (done || dead) return;
+    const topRank = Math.min(...remaining.map((r) => r.rank)); // equal ranks are both fine
+    if (p.rank === topRank) {
+      setPicked((s) => [...s, p.name]);
+      setMsg({ ok: true, text: `${p.name} – #${p.rank}` });
+      if (remaining.length === 1) {
+        const n = cleared + 1;
+        setCleared(n);
+        if (n > best) { setBest(n); saveLineBest(n); }
+      }
+    } else {
+      setLives((l) => l - 1);
+      setMsg({ ok: false, text: `Not ${p.name} – someone left is ranked higher.` });
+    }
+  };
+
+  const nextRound = () => { setPlayers(newLineup()); setPicked([]); setMsg(null); };
+  const restart = () => { setPlayers(newLineup()); setPicked([]); setLives(3); setCleared(0); setMsg(null); };
+
+  return (
+    <div className="mx-auto w-full max-w-xl px-4 py-6">
+      <h1 className="text-center text-3xl font-black">Line Them Up</h1>
+      <p className="mt-1 text-center text-sm font-semibold text-amber-400">{LAST_UPDATED}</p>
+      <p className="mt-3 text-center text-stone-400">
+        Tap the players in order, from <b className="text-stone-200">highest ranked</b> to <b className="text-stone-200">lowest ranked</b> in the PDC Order of Merit. Three lives.
+      </p>
+
+      <div className="mt-4 flex items-center justify-between font-semibold">
+        <div className="flex gap-1.5" aria-label={`${lives} lives left`}>
+          {[0, 1, 2].map((i) => (
+            <span key={i} className={`h-4 w-4 rounded-full border-2 ${i < lives ? "border-red-500 bg-red-500" : "border-stone-600"}`} />
+          ))}
+        </div>
+        <span className="text-emerald-400">Rounds: {cleared}</span>
+        <span className="text-stone-400">Best: {best}</span>
+      </div>
+
+      <ol className="mt-4 space-y-1.5">
+        {players.map((_, i) => {
+          const p = picked[i] ? players.find((x) => x.name === picked[i]) : null;
+          return (
+            <li key={i} className={`flex items-center gap-3 rounded-lg border-2 px-3 py-2.5 ${p ? "border-emerald-500 bg-emerald-900/50" : "border-stone-700 bg-stone-900"}`}>
+              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${p ? "bg-emerald-500 text-stone-950" : "bg-stone-700 text-stone-300"}`}>{i + 1}</span>
+              <span className={`flex-1 font-semibold ${p ? "text-stone-50" : "text-stone-600"}`}>{p ? p.name : "—"}</span>
+              {p && <span className="text-sm font-bold text-amber-400">#{p.rank}</span>}
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="mt-4 min-h-[1.5rem] text-center font-medium" role="status">
+        {msg && <span className={msg.ok ? "text-emerald-400" : "text-red-400"}>{msg.text}</span>}
+      </div>
+
+      {!done && !dead && (
+        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {remaining.map((p) => (
+            <button key={p.name} type="button" onClick={() => tap(p)} className="rounded-xl border-2 border-stone-600 bg-stone-800 px-4 py-3 text-lg font-bold hover:border-emerald-500 hover:bg-stone-700">
+              {p.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {done && !dead && (
+        <button onClick={nextRound} className="mt-2 w-full rounded-xl bg-emerald-600 px-4 py-4 text-lg font-bold text-white hover:bg-emerald-500">
+          Round cleared! Next round →
+        </button>
+      )}
+
+      {dead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-sm rounded-2xl border-2 border-red-500 bg-stone-900 p-8 text-center shadow-2xl">
+            <p className="text-4xl font-black text-red-400">Game over</p>
+            <p className="mt-2 text-xl font-bold">Rounds cleared: {cleared}</p>
+            <p className="mt-4 text-xs uppercase tracking-widest text-stone-500">The correct order was</p>
+            <ol className="mt-1 text-left text-stone-300">
+              {[...players].sort((a, b) => a.rank - b.rank).map((p) => (
+                <li key={p.name} className="flex justify-between"><span>{p.name}</span><span className="font-bold text-amber-400">#{p.rank}</span></li>
+              ))}
+            </ol>
+            <div className="mt-6 flex flex-col gap-2">
+              <button onClick={restart} className="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white hover:bg-emerald-500">Play again</button>
+              <button onClick={onBack} className="rounded-lg border border-stone-600 px-5 py-2 font-semibold text-stone-300 hover:bg-stone-800">Back to menu</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const GAMES = [
   { id: "top-10", name: "The Top 10", blurb: "Name all 10. Three lives. No misses = a whitewash!", live: true },
   { id: "higher-lower", name: "Higher or Lower", blurb: "Order of Merit: is the next player ranked higher or lower?", live: true },
-  { id: "commentary", name: "Guess the Commentary", blurb: "Coming soon", live: false },
-  { id: "soon", name: "Coming soon", blurb: "Another game is on its way", live: false },
+  { id: "lineup", name: "Line Them Up", blurb: "Put 5 players in Order of Merit order. Three lives.", live: true },
+  { id: "guess-player", name: "Guess the Player", blurb: "Coming soon", live: false },
 ];
 
 function Card({ title, sub, onClick, disabled }) {
@@ -810,9 +1064,11 @@ export default function App() {
                 <button onClick={back} className="rounded bg-stone-950/80 px-2 py-1 text-sm text-stone-300 hover:text-white">← Back</button>
               </header>
             )}
-            {screen === "menu" && <MainMenu onPlay={(id) => setScreen(id === "higher-lower" ? "higherlower" : "questions")} />}
+            {screen === "menu" && <MainMenu onPlay={(id) => setScreen({ "higher-lower": "higherlower", "guess-player": "guessplayer", lineup: "lineup" }[id] || "questions")} />}
             {screen === "questions" && <QuestionMenu onPick={(q) => { setQuestion(q); setScreen("game"); }} />}
             {screen === "higherlower" && <HigherLower onBack={() => setScreen("menu")} />}
+            {screen === "guessplayer" && <GuessPlayer onBack={() => setScreen("menu")} />}
+            {screen === "lineup" && <LineUp onBack={() => setScreen("menu")} />}
             {screen === "game" && <TopTen key={question.date} q={question} onBack={() => setScreen("questions")} />}
           </>
         )}
