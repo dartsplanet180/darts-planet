@@ -175,7 +175,7 @@ const QUESTIONS = [
   },
   {
     date: "2026-10-25",
-    title: "Last 10 players to beat Littler in televised PDC events (not including World Masters or the Premier League) (after the morning session)",
+    title: "Last 10 players to beat Littler in televised PDC events (not including World Masters or the Premier League) (after today’s morning session)",
     answers: [
       "Krzysztof Ratajski", "Luke Woodhouse", "Jonny Clayton", "Niels Zonneveld", "James Wade",
       "Danny Noppert", "Gian van Veen", "Luke Humphries", "Andrew Gilding", "Rob Cross",
@@ -195,6 +195,22 @@ const QUESTIONS = [
     answers: [
       "Chris Dobey", "Charlie Manby", "Karel Sedlacek", "Cameron Menzies", "Luke Humphries",
       "Jermaine Wattimena", "Sebastian Bialecki", "Henry Coates", "Gabriel Clemens", "Rob Cross",
+    ],
+  },
+  {
+    date: "2026-11-02",
+    title: "Top 10 Highest Ranked players in the PDC Order of Merit that are sponsored by Target Darts",
+    answers: [
+      "Luke Littler", "Josh Rock", "Nathan Aspinall", "Stephen Bunting", "Chris Dobey",
+      "Kevin Doets", "Rob Cross", "Jeffrey de Graaf", "Scott Williams", "Raymond van Barneveld",
+    ],
+  },
+  {
+    date: "2026-11-03",
+    title: "Last 10 players to win a PDC major title",
+    answers: [
+      "Ross Smith", "Luke Humphries", "Luke Littler", "Gian van Veen", "Michael van Gerwen",
+      "Ritchie Edhouse", "Mike De Decker", "Dimitri Van den Bergh", "Stephen Bunting", "Andrew Gilding",
     ],
   },
 ];
