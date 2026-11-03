@@ -1,0 +1,8 @@
+body{margin:0;background:#0c0a09;color:#e7e5e4;font:17px/1.65 system-ui,sans-serif}a{color:#34d399}
+header,footer{padding:16px;text-align:center}header{border-bottom:1px solid #292524}
+footer{border-top:1px solid #292524;margin-top:48px;color:#78716c;font-size:14px}
+nav a{margin:0 10px;font-weight:700;text-decoration:none}
+main{max-width:720px;margin:0 auto;padding:24px 16px}
+h1{font-size:32px;line-height:1.2}h2{font-size:22px;margin-top:1.6em;color:#fafaf9}
+.logo{font-weight:900;font-size:20px;color:#fafaf9;text-decoration:none;display:block;margin-bottom:8px}.logo b{color:#ef4444}
+.card{background:#1c1917;border:1px solid #44403c;border-radius:12px;padding:14px 16px;margin:12px 0}
