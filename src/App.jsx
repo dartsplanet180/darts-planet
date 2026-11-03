@@ -930,9 +930,11 @@ const linkProps = (page) => ({
 function Footer() {
   return (
     <footer className="relative z-10 mt-12 border-t border-stone-800 px-4 py-8 text-center">
-      <div className="flex justify-center gap-6 text-lg font-bold text-emerald-400">
-        <a {...linkProps("privacy")} className="hover:text-emerald-300">Privacy</a>
-        <a {...linkProps("contact")} className="hover:text-emerald-300">Contact</a>
+      <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-lg font-bold text-emerald-400">
+        <a href="/about/" className="hover:text-emerald-300">About</a>
+        <a href="/how-to-play/" className="hover:text-emerald-300">How to play</a>
+        <a href="/privacy/" className="hover:text-emerald-300">Privacy</a>
+        <a href="/contact/" className="hover:text-emerald-300">Contact</a>
       </div>
       <p className="mx-auto mt-4 max-w-md text-sm text-stone-500">
         <span className="text-stone-200">© {new Date().getFullYear()} {SITE_NAME} //</span> All logos and brands are
