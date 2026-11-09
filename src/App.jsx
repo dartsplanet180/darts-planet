@@ -106,6 +106,15 @@ const PLAYERS = [
   "Andy Baetens", "Adam Lipscombe", "Teemu Harju", "Justin Hood", "Jurjen van der Velde",
   "Adam Sevada", "Patrik Kovacs", "Motomu Sakai", "David Munyua", "Dominik Gruellich",
   "Mitsuhiko Tatsunami", "Matthew Dennant", "Jesus Salate", "Gemma Hayter", "Tim Pusey", "Darryl Pilgrim", "Henry Coates", "Jimmy van Schie",
+  "Rob Owen", "Tom Bissell", "Tom Sykes", "Joe Hunt", "Thomas Lovely", "Leon Weber",
+  "Tommy Morris", "Viktor Tingstrom", "Marvin van Velzen", "Shane McGuirk", "Greg Ritchie",
+  "Adam Paxton", "David Sharp", "Martijn Dragt", "Dennie Olde Kalter", "Adam Warner",
+  "Jeffrey Sparidaans", "Tyler Thorpe", "Tommy Lishman", "Niall Culleton", "Sietse Lap",
+  "Jack Tweddell", "Adam Leek", "Maximilian Czerwinski", "Derek Coulson", "Stephen Rosney",
+  "Nathan Potter", "Stefaan Henderyck", "Tytus Kanik", "Carl Sneyd", "Samuel Price",
+  "Daniel Klose", "Daniel Ayres", "Yorick Hofkens", "Lewis Pride", "Pascal Rupprecht",
+  "Marvin Kraft", "Paul Krohne", "Jonas Masalin", "Michael Unterbuchner", "Jan Schmidt",
+  "Pero Ljubic", "Christopher Wickenden", "Johan Engstrom", "Nandor Major", "Marcel Hausotter",
 ];
 
 /* ═════════ 2. QUESTIONS (one per day) ═════════
@@ -211,6 +220,30 @@ const QUESTIONS = [
     answers: [
       "Ross Smith", "Luke Humphries", "Luke Littler", "Gian van Veen", "Michael van Gerwen",
       "Ritchie Edhouse", "Mike De Decker", "Dimitri Van den Bergh", "Stephen Bunting", "Andrew Gilding",
+    ],
+  },
+  {
+    date: "2026-11-10",
+    title: "Highest averages across the 2026 PDC Players Championship campaign",
+    answers: [
+      "Gerwyn Price", "Luke Humphries", "Chris Dobey", "Gary Anderson", "Wessel Nijman",
+      "Luke Littler", "Ross Smith", "Kevin Doets", "Michael van Gerwen", "Dirk van Duijvenbode",
+    ],
+  },
+  {
+    date: "2026-11-09",
+    title: "Players with most 180s on the PDC European Tour in 2026",
+    answers: [
+      "Ross Smith", "Niels Zonneveld", "Kevin Doets", "Wessel Nijman", "Gian van Veen",
+      "Danny Noppert", "Nathan Aspinall", "Dirk van Duijvenbode", "Josh Rock", "Damon Heta",
+    ],
+  },
+  {
+    date: "2026-11-11",
+    title: "First 10 different winners of a PDC European Tour event",
+    answers: [
+      "Justin Pipe", "Phil Taylor", "Raymond van Barneveld", "Adrian Lewis", "Simon Whitlock",
+      "John Part", "Wes Newton", "Michael van Gerwen", "Dave Chisnall", "Steve Beaton",
     ],
   },
 ];
@@ -805,10 +838,228 @@ function LineUp({ onBack }) {
   );
 }
 
+/* ═════════ 501 – PLAY A LEG OF DARTS ═════════
+   Tap the board to choose where to aim. The crosshair wobbles around your aim
+   point – press THROW when it is on target. Finish on a double. Fewest darts wins. */
+const B_CX = 220, B_CY = 220, B_K = 190 / 170; // board centre and scale (pixels per mm)
+const SECTORS = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+const RING_BOOST = 1.05; // trebles and doubles are 5% wider than a standard board
+const BR = {
+  bull: 6.35 * B_K, outerBull: 15.9 * B_K,
+  trebleIn: (103 - 4 * RING_BOOST) * B_K, trebleOut: (103 + 4 * RING_BOOST) * B_K,
+  doubleIn: (170 - 8 * RING_BOOST) * B_K, doubleOut: 170 * B_K,
+};
+const DIFFS = {
+  hard: { label: "Hard", sub: "Finals night nerves", wobble: 36, speed: 1.25 },
+};
+
+const polar = (r, deg) => { const a = (deg * Math.PI) / 180; return [B_CX + r * Math.sin(a), B_CY - r * Math.cos(a)]; };
+const arcPath = (r1, r2, a1, a2) => {
+  const [x1, y1] = polar(r2, a1), [x2, y2] = polar(r2, a2), [x3, y3] = polar(r1, a2), [x4, y4] = polar(r1, a1);
+  return `M${x1} ${y1}A${r2} ${r2} 0 0 1 ${x2} ${y2}L${x3} ${y3}A${r1} ${r1} 0 0 0 ${x4} ${y4}Z`;
+};
+
+function dartScore(x, y) {
+  const dx = x - B_CX, dy = y - B_CY, r = Math.hypot(dx, dy);
+  if (r <= BR.bull) return { value: 50, dbl: true, label: "Bull" };
+  if (r <= BR.outerBull) return { value: 25, dbl: false, label: "25" };
+  if (r > BR.doubleOut) return { value: 0, dbl: false, label: "Miss" };
+  let deg = (Math.atan2(dx, -dy) * 180) / Math.PI;
+  if (deg < 0) deg += 360;
+  const n = SECTORS[Math.floor(((deg + 9) % 360) / 18)];
+  if (r >= BR.trebleIn && r <= BR.trebleOut) return { value: 3 * n, dbl: false, label: `T${n}` };
+  if (r >= BR.doubleIn) return { value: 2 * n, dbl: true, label: `D${n}` };
+  return { value: n, dbl: false, label: `S${n}` };
+}
+
+function buildBoard() {
+  const parts = [];
+  parts.push(<circle key="bg" cx={B_CX} cy={B_CY} r={BR.doubleOut + 4} fill="#0c0a09" />);
+  SECTORS.forEach((n, i) => {
+    const a1 = i * 18 - 9, a2 = i * 18 + 9;
+    const single = i % 2 === 0 ? "#171717" : "#e8dcc0";
+    const ring = i % 2 === 0 ? "#c62828" : "#2e7d32";
+    const s = { stroke: "#0c0a09", strokeWidth: 0.6 };
+    parts.push(
+      <path key={`a${i}`} d={arcPath(BR.outerBull, BR.trebleIn, a1, a2)} fill={single} {...s} />,
+      <path key={`b${i}`} d={arcPath(BR.trebleIn, BR.trebleOut, a1, a2)} fill={ring} {...s} />,
+      <path key={`c${i}`} d={arcPath(BR.trebleOut, BR.doubleIn, a1, a2)} fill={single} {...s} />,
+      <path key={`d${i}`} d={arcPath(BR.doubleIn, BR.doubleOut, a1, a2)} fill={ring} {...s} />
+    );
+    const [tx, ty] = polar(BR.doubleOut + 15, i * 18);
+    parts.push(<text key={`t${i}`} x={tx} y={ty} textAnchor="middle" dominantBaseline="central" fontSize="15" fontWeight="700" fill="#e7e5e4">{n}</text>);
+  });
+  parts.push(
+    <circle key="ob" cx={B_CX} cy={B_CY} r={BR.outerBull} fill="#2e7d32" stroke="#0c0a09" strokeWidth="0.6" />,
+    <circle key="bb" cx={B_CX} cy={B_CY} r={BR.bull} fill="#c62828" stroke="#0c0a09" strokeWidth="0.6" />
+  );
+  return parts;
+}
+
+const loadBest501 = (d) => { try { return Number(localStorage.getItem(`501-best-${d}`)) || 0; } catch { return 0; } };
+const saveBest501 = (d, n) => { try { localStorage.setItem(`501-best-${d}`, String(n)); } catch { /* ignore */ } };
+const startAim = () => { const [x, y] = polar((BR.trebleIn + BR.trebleOut) / 2, 0); return { x, y }; };
+
+function Darts501({ onBack }) {
+  const [diff] = useState("hard");
+  const [aim, setAim] = useState(startAim);
+  const [remaining, setRemaining] = useState(501);
+  const [turnStart, setTurnStart] = useState(501);
+  const [turn, setTurn] = useState([]);
+  const [landings, setLandings] = useState([]);
+  const [turnOver, setTurnOver] = useState(false);
+  const [turns, setTurns] = useState(0);
+  const [darts, setDarts] = useState(0);
+  const [won, setWon] = useState(false);
+  const [msg, setMsg] = useState(null);
+  const [best, setBest] = useState(() => loadBest501("hard"));
+
+  const svgRef = useRef(null);
+  const crossRef = useRef(null);
+  const aimRef = useRef(aim);
+  const posRef = useRef(startAim());
+  const art = useMemo(buildBoard, []);
+
+  useEffect(() => { aimRef.current = aim; }, [aim]);
+
+  // The crosshair wobbles around the aim point
+  useEffect(() => {
+    if (!diff) return undefined;
+    const { wobble, speed } = DIFFS[diff];
+    let raf;
+    const loop = (now) => {
+      const t = (now / 1000) * speed;
+      const a = aimRef.current;
+      const x = a.x + wobble * (0.65 * Math.sin(1.9 * t + 0.4) + 0.35 * Math.sin(4.3 * t + 1.1));
+      const y = a.y + wobble * (0.65 * Math.sin(1.5 * t + 2.0) + 0.35 * Math.sin(3.7 * t + 0.2));
+      posRef.current = { x, y };
+      crossRef.current?.setAttribute("transform", `translate(${x} ${y})`);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [diff]);
+
+  const choose = (d) => {
+    setBest(loadBest501(d));
+    setAim(startAim()); setRemaining(501); setTurnStart(501); setTurn([]); setLandings([]);
+    setTurnOver(false); setTurns(0); setDarts(0); setWon(false); setMsg(null);
+  };
+
+  const setAimFromPointer = (e) => {
+    if (won || turnOver) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) * 440) / rect.width;
+    const y = ((e.clientY - rect.top) * 440) / rect.height;
+    setAim({ x: Math.max(0, Math.min(440, x)), y: Math.max(0, Math.min(440, y)) });
+  };
+
+  const throwDart = () => {
+    if (won || turnOver) return;
+    const p = posRef.current;
+    const x = p.x + (Math.random() - 0.5) * 3, y = p.y + (Math.random() - 0.5) * 3; // tiny random drift
+    const s = dartScore(x, y);
+    const nr = remaining - s.value;
+    const bust = nr < 0 || nr === 1 || (nr === 0 && !s.dbl);
+    const t = [...turn, s];
+    const thrown = darts + 1;
+    setLandings((l) => [...l, { x, y }]);
+    setTurn(t);
+    setDarts(thrown);
+    if (bust) {
+      setRemaining(turnStart); setTurnOver(true);
+      setMsg(nr === 0 ? "Bust! You must finish on a double." : "Bust!");
+    } else {
+      setRemaining(nr);
+      if (nr === 0) {
+        setWon(true); setMsg(null);
+        if (best === 0 || thrown < best) { setBest(thrown); saveBest501(diff, thrown); }
+      } else if (t.length === 3) {
+        setTurnOver(true); setMsg(`Turn score: ${t.reduce((a, d) => a + d.value, 0)}`);
+      } else setMsg(null);
+    }
+  };
+
+  const nextTurn = () => {
+    setTurnStart(remaining); setTurn([]); setLandings([]); setTurnOver(false); setTurns((n) => n + 1); setMsg(null);
+  };
+  const again = () => choose(diff);
+
+  const hint = remaining <= 40 && remaining % 2 === 0 ? `Double ${remaining / 2} to win` : remaining === 50 ? "Bullseye to win" : null;
+
+  return (
+    <div className="mx-auto w-full max-w-md px-4 py-4">
+      <div className="flex items-center justify-between text-sm font-semibold text-stone-400">
+        <span>501</span>
+        <span>Darts: {darts} · Turn {turns + 1}</span>
+        <span>Best: {best || "–"}</span>
+      </div>
+
+      <p className="mt-1 text-center text-7xl font-black text-amber-400">{remaining}</p>
+      <p className="min-h-[1.25rem] text-center text-sm font-semibold text-emerald-400">{hint}</p>
+
+      <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="rounded-lg border-2 border-stone-700 bg-stone-900 py-2">
+            <span className={`text-lg font-bold ${turn[i] ? "text-stone-50" : "text-stone-600"}`}>{turn[i] ? turn[i].label : "–"}</span>
+            {turn[i] && <span className="ml-1 text-xs text-stone-400">{turn[i].value}</span>}
+          </div>
+        ))}
+      </div>
+      <p className="mt-2 min-h-[1.5rem] text-center font-bold text-red-400" role="status">{msg}</p>
+
+      <svg
+        ref={svgRef}
+        viewBox="0 0 440 440"
+        className="mx-auto mt-1 w-full max-w-[420px] cursor-crosshair"
+        style={{ touchAction: "manipulation" }}
+        onPointerDown={setAimFromPointer}
+        role="img"
+        aria-label="Dartboard. Tap to choose where to aim."
+      >
+        {art}
+        <circle cx={aim.x} cy={aim.y} r="3" fill="#fbbf24" opacity="0.7" />
+        {landings.map((l, i) => (
+          <circle key={i} cx={l.x} cy={l.y} r="4.5" fill="#fafafa" stroke="#0c0a09" strokeWidth="1.5" />
+        ))}
+        <g ref={crossRef} transform={`translate(${aim.x} ${aim.y})`} pointerEvents="none">
+          <circle r="10" fill="none" stroke="#fbbf24" strokeWidth="2" />
+          <line x1="-16" x2="16" y1="0" y2="0" stroke="#fbbf24" strokeWidth="2" />
+          <line y1="-16" y2="16" x1="0" x2="0" stroke="#fbbf24" strokeWidth="2" />
+        </g>
+      </svg>
+      <p className="mt-1 text-center text-xs text-stone-500">Tap the board to aim. Press THROW when the crosshair is on target.</p>
+
+      {turnOver ? (
+        <button onClick={nextTurn} className="mt-3 w-full rounded-xl bg-stone-700 px-4 py-4 text-xl font-black text-white hover:bg-stone-600">Next turn →</button>
+      ) : (
+        <button onClick={throwDart} disabled={won} className="mt-3 w-full rounded-xl bg-red-600 px-4 py-4 text-xl font-black text-white hover:bg-red-500 active:bg-red-700 disabled:opacity-50">
+          THROW
+        </button>
+      )}
+
+      {won && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className={`w-full max-w-sm rounded-2xl border-2 bg-stone-900 p-8 text-center shadow-2xl ${darts === 9 ? "border-amber-400" : "border-emerald-500"}`}>
+            <p className={`text-4xl font-black ${darts === 9 ? "text-amber-400" : "text-emerald-400"}`}>{darts === 9 ? "🎯 NINE-DARTER!" : "Game shot!"}</p>
+            <p className="mt-2 text-xl font-bold">{darts} darts</p>
+            <p className="mt-1 text-stone-300">{darts === best ? "That's your best!" : `Your best is ${best}.`}</p>
+            <div className="mt-6 flex flex-col gap-2">
+              <button onClick={again} className="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white hover:bg-emerald-500">Play again</button>
+              <button onClick={onBack} className="rounded-lg border border-stone-600 px-5 py-2 font-semibold text-stone-300 hover:bg-stone-800">Back to menu</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const GAMES = [
   { id: "top-10", name: "The Top 10", blurb: "Name all 10. Three lives. No misses = a whitewash!", live: true },
   { id: "higher-lower", name: "Higher or Lower", blurb: "Order of Merit: is the next player ranked higher or lower?", live: true },
   { id: "lineup", name: "Line Them Up", blurb: "Put 5 players in Order of Merit order. Three lives.", live: true },
+  { id: "darts501", name: "501", blurb: "Play a full leg of darts. Aim, time it, finish on a double.", live: true },
   { id: "guess-player", name: "Guess the Player", blurb: "Coming soon", live: false },
 ];
 
@@ -1082,11 +1333,12 @@ export default function App() {
                 <button onClick={back} className="rounded bg-stone-950/80 px-2 py-1 text-sm text-stone-300 hover:text-white">← Back</button>
               </header>
             )}
-            {screen === "menu" && <MainMenu onPlay={(id) => setScreen({ "higher-lower": "higherlower", "guess-player": "guessplayer", lineup: "lineup" }[id] || "questions")} />}
+            {screen === "menu" && <MainMenu onPlay={(id) => setScreen({ "higher-lower": "higherlower", "guess-player": "guessplayer", lineup: "lineup", darts501: "darts501" }[id] || "questions")} />}
             {screen === "questions" && <QuestionMenu onPick={(q) => { setQuestion(q); setScreen("game"); }} />}
             {screen === "higherlower" && <HigherLower onBack={() => setScreen("menu")} />}
             {screen === "guessplayer" && <GuessPlayer onBack={() => setScreen("menu")} />}
             {screen === "lineup" && <LineUp onBack={() => setScreen("menu")} />}
+            {screen === "darts501" && <Darts501 onBack={() => setScreen("menu")} />}
             {screen === "game" && <TopTen key={question.date} q={question} onBack={() => setScreen("questions")} />}
           </>
         )}
