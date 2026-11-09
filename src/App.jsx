@@ -115,6 +115,7 @@ const PLAYERS = [
   "Daniel Klose", "Daniel Ayres", "Yorick Hofkens", "Lewis Pride", "Pascal Rupprecht",
   "Marvin Kraft", "Paul Krohne", "Jonas Masalin", "Michael Unterbuchner", "Jan Schmidt",
   "Pero Ljubic", "Christopher Wickenden", "Johan Engstrom", "Nandor Major", "Marcel Hausotter",
+  "Jack Aldridge", "Archie Self",
 ];
 
 /* ═════════ 2. QUESTIONS (one per day) ═════════
@@ -445,38 +446,38 @@ function TopTen({ q, onBack }) {
    Players in order, rank 1 → 150. A leading "=" means the SAME rank as the
    player above (a tie). Update LAST_UPDATED and this list whenever the
    Order of Merit changes. */
-const LAST_UPDATED = "As of: October 29, 2026. Updated after PC32.";
+const LAST_UPDATED = "As of: November 5, 2026. Updated after PC34.";
 const OOM_RAW = [
-  "Luke Littler", "Gian van Veen", "Luke Humphries", "Gerwyn Price", "Jonny Clayton", "Ross Smith",
-  "James Wade", "Josh Rock", "Nathan Aspinall", "Stephen Bunting", "Danny Noppert",
-  "Michael van Gerwen", "Wessel Nijman", "Gary Anderson", "Ryan Searle", "Chris Dobey",
-  "Luke Woodhouse", "Jermaine Wattimena", "Krzysztof Ratajski", "Martin Schindler", "Damon Heta",
-  "Dirk van Duijvenbode", "Kevin Doets", "Rob Cross", "Ryan Joyce", "Cameron Menzies",
-  "Andrew Gilding", "Niels Zonneveld", "Dave Chisnall", "William O'Connor", "Daryl Gurney",
-  "Joe Cullen", "Mike De Decker", "Niko Springer", "Peter Wright", "Ricardo Pietreczko",
-  "Michael Smith", "Justin Hood", "Jeffrey de Graaf", "Karel Sedlacek", "=Callan Rydz",
-  "Mickey Mansell", "Martin Lukeman", "Scott Williams", "James Hurrell", "Kim Huybrechts",
-  "Madars Razma", "Brendan Dolan", "Raymond van Barneveld", "Connor Scutt", "Sebastian Bialecki",
-  "Ricky Evans", "Gabriel Clemens", "Ritchie Edhouse", "Mensur Suljovic", "Keane Barry",
-  "Ian White", "Richard Veenstra", "Dimitri Van den Bergh", "Bradley Brooks", "Alan Soutar",
-  "Rob Owen", "Lukas Wenig", "Nick Kenny", "Ryan Meikle", "Max Hopp", "Mario Vandenbogaerde",
-  "Cristo Reyes", "Cam Crabtree", "Wesley Plaisier", "Maik Kuivenhoven", "Thibault Tricole",
-  "Tom Bissell", "Adam Lipscombe", "Beau Greaves", "Darryl Pilgrim", "Cor Dekker", "Charlie Manby",
-  "=Dominik Gruellich", "Christian Kist", "Tom Sykes", "Andy Boulton", "Jim Long",
-  "Oskar Lukasiak", "Joe Hunt", "Darius Labanauskas", "=Jimmy van Schie", "Thomas Lovely",
-  "Leon Weber", "Tommy Morris", "Viktor Tingstrom", "=Marvin van Velzen", "Tavis Dudeney",
-  "Alexander Merkx", "=Shane McGuirk", "Henry Coates", "Owen Bates", "=Adam Gawlas",
-  "Greg Ritchie", "Kai Gotthardt", "Adam Paxton", "David Sharp", "Stephen Burton",
-  "Jurjen van der Velde", "Jeffrey De Zwaan", "Martijn Dragt", "Mervyn King", "Chris Landman",
-  "=Dennie Olde Kalter", "=Adam Warner", "Benjamin Pratnemer", "Jeffrey Sparidaans",
-  "Tyler Thorpe", "Tommy Lishman", "Niall Culleton", "Sietse Lap", "Scott Waites", "Jack Tweddell",
-  "Arno Merk", "Adam Leek", "=Stefan Bellmont", "Maximilian Czerwinski", "Rhys Griffin",
-  "Steve Lennon", "=Derek Coulson", "Stephen Rosney", "Nathan Potter", "Stefaan Henderyck",
-  "Tytus Kanik", "Carl Sneyd", "Harry Ward", "Samuel Price", "Daniel Klose", "Daniel Ayres",
-  "Yorick Hofkens", "Lewis Pride", "=Pascal Rupprecht", "Andy Baetens", "Rusty-Jake Rodriguez",
-  "Marvin Kraft", "=Paul Krohne", "Boris Krcmar", "Jonas Masalin", "=Michael Unterbuchner",
-  "Jan Schmidt", "=Patrik Kovacs", "Pero Ljubic", "Christopher Wickenden", "Johan Engstrom",
-  "Nandor Major", "=Dragutin Horvat", "=Marcel Hausotter",
+  "Luke Littler", "Luke Humphries", "Gian van Veen", "Gerwyn Price", "Jonny Clayton", "Ross Smith",
+  "James Wade", "Josh Rock", "Stephen Bunting", "Danny Noppert", "Michael van Gerwen",
+  "=Nathan Aspinall", "Wessel Nijman", "Gary Anderson", "Ryan Searle", "Chris Dobey",
+  "Luke Woodhouse", "Jermaine Wattimena", "Krzysztof Ratajski", "Martin Schindler",
+  "Dirk van Duijvenbode", "=Damon Heta", "Kevin Doets", "Rob Cross", "Ryan Joyce",
+  "Cameron Menzies", "Andrew Gilding", "Niels Zonneveld", "William O'Connor", "=Daryl Gurney",
+  "Dave Chisnall", "Joe Cullen", "Mike De Decker", "Niko Springer", "Peter Wright",
+  "Ricardo Pietreczko", "Michael Smith", "Justin Hood", "Jeffrey de Graaf", "Callan Rydz",
+  "Mickey Mansell", "Karel Sedlacek", "Martin Lukeman", "Kim Huybrechts", "Scott Williams",
+  "James Hurrell", "Raymond van Barneveld", "Brendan Dolan", "Madars Razma", "Connor Scutt",
+  "Sebastian Bialecki", "Ricky Evans", "Gabriel Clemens", "Ritchie Edhouse", "Mensur Suljovic",
+  "Keane Barry", "Ian White", "Richard Veenstra", "Bradley Brooks", "Dimitri Van den Bergh",
+  "Alan Soutar", "Rob Owen", "Lukas Wenig", "Nick Kenny", "Cristo Reyes", "Max Hopp",
+  "Ryan Meikle", "Mario Vandenbogaerde", "Cam Crabtree", "Wesley Plaisier", "Maik Kuivenhoven",
+  "Thibault Tricole", "Tom Bissell", "Beau Greaves", "Adam Lipscombe", "Darryl Pilgrim",
+  "Charlie Manby", "Cor Dekker", "Dominik Gruellich", "Christian Kist", "Tom Sykes",
+  "Tommy Morris", "=Andy Boulton", "Jim Long", "Oskar Lukasiak", "Joe Hunt", "Darius Labanauskas",
+  "=Jimmy van Schie", "Thomas Lovely", "Leon Weber", "Viktor Tingstrom", "Shane McGuirk",
+  "Marvin van Velzen", "Alexander Merkx", "Owen Bates", "Henry Coates", "=Tavis Dudeney",
+  "Adam Gawlas", "Jurjen van der Velde", "Greg Ritchie", "Jeffrey De Zwaan", "Kai Gotthardt",
+  "Adam Paxton", "David Sharp", "Stephen Burton", "Chris Landman", "Mervyn King",
+  "Benjamin Pratnemer", "Martijn Dragt", "Dennie Olde Kalter", "=Adam Warner", "Tyler Thorpe",
+  "=Jeffrey Sparidaans", "Tommy Lishman", "Sietse Lap", "Derek Coulson", "=Niall Culleton",
+  "Adam Leek", "=Stefan Bellmont", "=Scott Waites", "Steve Lennon", "Jack Tweddell", "Arno Merk",
+  "Maximilian Czerwinski", "Stephen Rosney", "Rhys Griffin", "Stefaan Henderyck", "Nathan Potter",
+  "Carl Sneyd", "Harry Ward", "Tytus Kanik", "Samuel Price", "Daniel Klose", "Jack Aldridge",
+  "Daniel Ayres", "Yorick Hofkens", "Lewis Pride", "=Pascal Rupprecht", "Marvin Kraft",
+  "=Andy Baetens", "Rusty-Jake Rodriguez", "Paul Krohne", "Boris Krcmar", "Jonas Masalin",
+  "=Michael Unterbuchner", "Jan Schmidt", "=Patrik Kovacs", "Pero Ljubic", "Archie Self",
+  "=Christopher Wickenden", "Johan Engstrom",
 ];
 const OOM = (() => {
   let rank = 0;
@@ -850,7 +851,7 @@ const BR = {
   doubleIn: (170 - 8 * RING_BOOST) * B_K, doubleOut: 170 * B_K,
 };
 const DIFFS = {
-  hard: { label: "Hard", sub: "Finals night nerves", wobble: 36, speed: 1.25 },
+  hard: { label: "Hard", sub: "Finals night nerves", wobble: 39, speed: 1.25 },
 };
 
 const polar = (r, deg) => { const a = (deg * Math.PI) / 180; return [B_CX + r * Math.sin(a), B_CY - r * Math.cos(a)]; };
