@@ -851,7 +851,7 @@ const BR = {
   doubleIn: (170 - 8 * RING_BOOST) * B_K, doubleOut: 170 * B_K,
 };
 const DIFFS = {
-  hard: { label: "Hard", sub: "Finals night nerves", wobble: 39, speed: 1.25 },
+  hard: { label: "Hard", sub: "Finals night nerves", wobble: 45, speed: 1.54 },
 };
 
 const polar = (r, deg) => { const a = (deg * Math.PI) / 180; return [B_CX + r * Math.sin(a), B_CY - r * Math.cos(a)]; };
@@ -901,32 +901,121 @@ const loadBest501 = (d) => { try { return Number(localStorage.getItem(`501-best-
 const saveBest501 = (d, n) => { try { localStorage.setItem(`501-best-${d}`, String(n)); } catch { /* ignore */ } };
 const startAim = () => { const [x, y] = polar((BR.trebleIn + BR.trebleOut) / 2, 0); return { x, y }; };
 
+const CONFETTI_COLOURS = ["#fbbf24", "#ef4444", "#34d399", "#60a5fa", "#f472b6"];
+const CELEBRATE_CSS = `
+@keyframes pop180 { 0% { transform: scale(.3); opacity: 0 } 55% { transform: scale(1.18); opacity: 1 } 100% { transform: scale(1); opacity: 1 } }
+@keyframes confettiFall { 0% { transform: translateY(-12vh) rotate(0deg); opacity: 1 } 100% { transform: translateY(112vh) rotate(720deg); opacity: .9 } }
+@keyframes coolFill { from { width: 0 } to { width: 100% } }
+@keyframes toastIn { 0% { transform: translateY(-20px); opacity: 0 } 15% { transform: translateY(0); opacity: 1 } 85% { opacity: 1 } 100% { opacity: 0 } }`;
+
+function ConfettiPiece({ c }) {
+  return (
+    <div
+      className="pointer-events-none"
+      style={{ position: "absolute", top: 0, left: `${c.left}%`, width: c.size, height: c.size * 1.6, background: c.colour, borderRadius: 2, animation: `confettiFall ${c.dur}s ${c.delay}s ease-in forwards` }}
+    />
+  );
+}
+
+const emptyStats = () => [0, 1].map(() => ({ darts: 0, points: 0, busts: 0, ton: 0, ton40: 0, oneEighty: 0, high: 0, highFinish: 0, bestLeg: 0 }));
+const avgOf = (o) => (o.darts ? (o.points / o.darts) * 3 : 0);
+
+function StatsTable({ stats, two, legsWon, bestOf }) {
+  const dash = (n) => (n ? n : "–");
+  const rows = [
+    ["3-dart average", (o) => avgOf(o).toFixed(1)],
+    ["Darts thrown", (o) => o.darts],
+    ...(bestOf > 1 ? [["Legs won", (o, i) => legsWon[i]]] : []),
+    ["100+ scores", (o) => o.ton],
+    ["140+ scores", (o) => o.ton40],
+    ["180s", (o) => o.oneEighty],
+    ["Highest score", (o) => dash(o.high)],
+    ["Highest finish", (o) => dash(o.highFinish)],
+    ["Best leg (darts)", (o) => dash(o.bestLeg)],
+    ["Busts", (o) => o.busts],
+  ];
+  const cols = two ? [0, 1] : [0];
+  return (
+    <table className="mt-4 w-full text-left text-sm">
+      <thead>
+        <tr className="text-xs uppercase tracking-widest text-stone-500">
+          <th className="pb-2 font-semibold">Stat</th>
+          {cols.map((i) => <th key={i} className="pb-2 text-right font-semibold">{two ? `P${i + 1}` : "You"}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(([label, f]) => (
+          <tr key={label} className="border-t border-stone-800">
+            <td className="py-1.5 text-stone-300">{label}</td>
+            {cols.map((i) => <td key={i} className="py-1.5 text-right font-bold text-stone-50">{f(stats[i], i)}</td>)}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 function Darts501({ onBack }) {
-  const [diff] = useState("hard");
+  const [pick, setPick] = useState(null); // mode chosen, waiting for the number of legs
+  const [mode, setMode] = useState(null); // "single" | "two"
+  const [bestOf, setBestOf] = useState(1); // 1, 3 or 5
+  const [leg, setLeg] = useState(1);
+  const [legsWon, setLegsWon] = useState([0, 0]);
+  const [starter, setStarter] = useState(0); // who threw first in leg 1 (alternates each leg)
+  const [legBreak, setLegBreak] = useState(null); // { winner } between legs
+  const [legDarts, setLegDarts] = useState([0, 0]); // darts thrown this leg
+  const [stats, setStats] = useState(emptyStats);
+  const [showStats, setShowStats] = useState(false);
   const [aim, setAim] = useState(startAim);
-  const [remaining, setRemaining] = useState(501);
+  const [scores, setScores] = useState([501, 501]);
+  const [cur, setCur] = useState(0); // whose turn it is (0 or 1)
   const [turnStart, setTurnStart] = useState(501);
   const [turn, setTurn] = useState([]);
   const [landings, setLandings] = useState([]);
   const [turnOver, setTurnOver] = useState(false);
-  const [turns, setTurns] = useState(0);
-  const [darts, setDarts] = useState(0);
-  const [won, setWon] = useState(false);
+  const [turns, setTurns] = useState([0, 0]);
+  const [winner, setWinner] = useState(null); // winner of the whole match
   const [msg, setMsg] = useState(null);
   const [best, setBest] = useState(() => loadBest501("hard"));
+  const [celebrate, setCelebrate] = useState(null); // 180s, big finishes, ton-plus scores
+  const [finish, setFinish] = useState(0); // the checkout the winner finished from
+  const celebId = useRef(0);
+  const [bull, setBull] = useState(null); // two-player "bull up": { who, d:[mm,mm], winner, tie }
+  const [cooling, setCooling] = useState(false); // 1 second cooldown after each throw
+  const coolTimer = useRef(null);
+  useEffect(() => () => clearTimeout(coolTimer.current), []);
+  const confetti = useMemo(
+    () => Array.from({ length: 34 }, (_, i) => ({
+      left: Math.random() * 100, delay: Math.random() * 0.7, dur: 1.7 + Math.random() * 1.3,
+      size: 6 + Math.random() * 7, colour: CONFETTI_COLOURS[i % CONFETTI_COLOURS.length],
+    })),
+    []
+  );
+  const celebrateNow = (c) => { celebId.current += 1; setCelebrate({ id: celebId.current, ...c }); };
 
   const svgRef = useRef(null);
   const crossRef = useRef(null);
   const aimRef = useRef(aim);
   const posRef = useRef(startAim());
   const art = useMemo(buildBoard, []);
+  const { wobble, speed } = DIFFS.hard;
+  const two = mode === "two";
+  const done = winner !== null;
+  const name = (i) => `Player ${i + 1}`;
+  const remaining = scores[cur];
 
   useEffect(() => { aimRef.current = aim; }, [aim]);
 
+  // Celebrations clear themselves
+  useEffect(() => {
+    if (!celebrate) return undefined;
+    const t = setTimeout(() => setCelebrate(null), celebrate.big ? 2600 : 1800);
+    return () => clearTimeout(t);
+  }, [celebrate]);
+
   // The crosshair wobbles around the aim point
   useEffect(() => {
-    if (!diff) return undefined;
-    const { wobble, speed } = DIFFS[diff];
+    if (!mode) return undefined;
     let raf;
     const loop = (now) => {
       const t = (now / 1000) * speed;
@@ -939,116 +1028,314 @@ function Darts501({ onBack }) {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [diff]);
+  }, [mode, wobble, speed]);
 
-  const choose = (d) => {
-    setBest(loadBest501(d));
-    setAim(startAim()); setRemaining(501); setTurnStart(501); setTurn([]); setLandings([]);
-    setTurnOver(false); setTurns(0); setDarts(0); setWon(false); setMsg(null);
+  const choose = (m, n) => {
+    setPick(null); setMode(m); setBestOf(n); setBest(loadBest501("hard"));
+    setLeg(1); setLegsWon([0, 0]); setStarter(0); setLegBreak(null); setLegDarts([0, 0]); setStats(emptyStats()); setShowStats(false);
+    setAim(m === "two" ? { x: B_CX, y: B_CY } : startAim()); setScores([501, 501]); setCur(0); setTurnStart(501); setTurn([]); setLandings([]);
+    setBull(m === "two" ? { who: 0, d: [null, null], winner: null, tie: false } : null);
+    setTurnOver(false); setTurns([0, 0]); setWinner(null); setMsg(null); setFinish(0); setCelebrate(null);
+    clearTimeout(coolTimer.current); setCooling(false);
   };
 
   const setAimFromPointer = (e) => {
-    if (won || turnOver) return;
+    if (done || turnOver || legBreak) return;
     const rect = svgRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) * 440) / rect.width;
     const y = ((e.clientY - rect.top) * 440) / rect.height;
     setAim({ x: Math.max(0, Math.min(440, x)), y: Math.max(0, Math.min(440, y)) });
   };
 
+  const startCooldown = () => {
+    setCooling(true);
+    clearTimeout(coolTimer.current);
+    coolTimer.current = setTimeout(() => setCooling(false), 1000);
+  };
+
+  // Bull up: each player throws one dart at the bull, closest throws first
+  const throwBull = (x, y) => {
+    if (bull.winner !== null || bull.tie || bull.d[bull.who] !== null) return;
+    const mm = Math.hypot(x - B_CX, y - B_CY) / B_K;
+    const d = bull.d.map((v, i) => (i === bull.who ? mm : v));
+    setLandings((l) => [...l, { x, y, c: bull.who === 0 ? "#fafafa" : "#38bdf8" }]);
+    if (bull.who === 0) setBull({ ...bull, d, who: 1 });
+    else if (Math.abs(d[0] - d[1]) < 0.3) setBull({ ...bull, d, tie: true });
+    else setBull({ ...bull, d, winner: d[0] < d[1] ? 0 : 1 });
+  };
+  const bullAgain = () => { setBull({ who: 0, d: [null, null], winner: null, tie: false }); setLandings([]); };
+  const startGame = () => {
+    setStarter(bull.winner); setCur(bull.winner); setTurnStart(501); setBull(null); setLandings([]); setTurn([]); setMsg(null); setAim(startAim());
+  };
+
+  const upd = (i, fn) => setStats((arr) => arr.map((o, k) => (k === i ? fn({ ...o }) : o)));
+  const closeTurn = (i, total) => upd(i, (o) => {
+    o.high = Math.max(o.high, total);
+    if (total >= 100) o.ton += 1;
+    if (total >= 140) o.ton40 += 1;
+    if (total === 180) o.oneEighty += 1;
+    return o;
+  });
+
   const throwDart = () => {
-    if (won || turnOver) return;
+    if (done || turnOver || cooling || legBreak) return;
+    startCooldown();
     const p = posRef.current;
     const x = p.x + (Math.random() - 0.5) * 3, y = p.y + (Math.random() - 0.5) * 3; // tiny random drift
+    if (bull) { throwBull(x, y); return; }
     const s = dartScore(x, y);
     const nr = remaining - s.value;
     const bust = nr < 0 || nr === 1 || (nr === 0 && !s.dbl);
     const t = [...turn, s];
-    const thrown = darts + 1;
+    const thrown = legDarts[cur] + 1;
+    const earlier = turn.reduce((a, d) => a + d.value, 0); // points already scored this turn
+    const setMine = (setter, v) => setter((arr) => arr.map((o, i) => (i === cur ? v : o)));
     setLandings((l) => [...l, { x, y }]);
     setTurn(t);
-    setDarts(thrown);
+    setMine(setLegDarts, thrown);
+    upd(cur, (o) => { o.darts += 1; if (bust) { o.points -= earlier; o.busts += 1; } else o.points += s.value; return o; });
     if (bust) {
-      setRemaining(turnStart); setTurnOver(true);
+      setMine(setScores, turnStart); setTurnOver(true);
       setMsg(nr === 0 ? "Bust! You must finish on a double." : "Bust!");
     } else {
-      setRemaining(nr);
+      setMine(setScores, nr);
+      const total = t.reduce((a, d) => a + d.value, 0);
       if (nr === 0) {
-        setWon(true); setMsg(null);
-        if (best === 0 || thrown < best) { setBest(thrown); saveBest501(diff, thrown); }
+        closeTurn(cur, total);
+        upd(cur, (o) => { o.highFinish = Math.max(o.highFinish, turnStart); if (o.bestLeg === 0 || thrown < o.bestLeg) o.bestLeg = thrown; return o; });
+        setMsg(null); setFinish(turnStart);
+        const newLegs = legsWon.map((v, i) => (i === cur ? v + 1 : v));
+        setLegsWon(newLegs);
+        if (!two && (best === 0 || thrown < best)) { setBest(thrown); saveBest501("hard", thrown); }
+        if (thrown === 9 || turnStart >= 100) celebrateNow({ big: true, confettiOnly: true });
+        const matchWon = two ? newLegs[cur] >= Math.ceil(bestOf / 2) : leg >= bestOf;
+        if (matchWon) setWinner(cur); else setLegBreak({ winner: cur });
       } else if (t.length === 3) {
-        setTurnOver(true); setMsg(`Turn score: ${t.reduce((a, d) => a + d.value, 0)}`);
+        closeTurn(cur, total);
+        setTurnOver(true); setMsg(`Turn score: ${total}`);
+        const who = two ? `${name(cur)} · ` : "";
+        if (total === 180) celebrateNow({ big: true, text: "180!", sub: `${who}ONE HUNDRED AND EIGHTY!` });
+        else if (total >= 100) celebrateNow({ big: false, text: `${total}!` });
       } else setMsg(null);
     }
   };
 
   const nextTurn = () => {
-    setTurnStart(remaining); setTurn([]); setLandings([]); setTurnOver(false); setTurns((n) => n + 1); setMsg(null);
+    const nxt = two ? 1 - cur : cur;
+    setTurns((arr) => arr.map((o, i) => (i === cur ? o + 1 : o)));
+    setCur(nxt); setTurnStart(scores[nxt]); setTurn([]); setLandings([]); setTurnOver(false); setMsg(null);
   };
-  const again = () => choose(diff);
 
+  // Next leg: fresh 501 for both, and the player who didn't start last time throws first
+  const nextLeg = () => {
+    const first = two ? (starter + leg) % 2 : 0;
+    setLeg((l) => l + 1); setScores([501, 501]); setCur(first); setTurnStart(501); setTurn([]); setLandings([]);
+    setTurnOver(false); setTurns([0, 0]); setLegDarts([0, 0]); setMsg(null); setFinish(0); setLegBreak(null); setCelebrate(null); setAim(startAim());
+  };
+
+  // ── Screen 1: single or two players
+  if (!mode && !pick) {
+    return (
+      <div className="mx-auto w-full max-w-xl px-4 py-10">
+        <h1 className="text-center text-4xl font-black">501</h1>
+        <p className="mt-3 text-center text-stone-400">Start on 501, count down to zero and finish on a double. A perfect leg takes nine darts.</p>
+        <div className="mt-8 space-y-3">
+          <button onClick={() => setPick("single")} className="block w-full rounded-xl border-2 border-emerald-600 bg-stone-900 p-5 text-left hover:bg-emerald-950">
+            <span className="block text-xl font-bold">Single player</span>
+            <span className="text-stone-400">Beat your best: finish in as few darts as you can.</span>
+          </button>
+          <button onClick={() => setPick("two")} className="block w-full rounded-xl border-2 border-emerald-600 bg-stone-900 p-5 text-left hover:bg-emerald-950">
+            <span className="block text-xl font-bold">Two players</span>
+            <span className="text-stone-400">Take turns on the same screen. Bull up to see who throws first.</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Screen 2: how many legs
+  if (!mode && pick) {
+    const opts = pick === "two"
+      ? [[1, "Best of 1", "First to win 1 leg"], [3, "Best of 3", "First to win 2 legs"], [5, "Best of 5", "First to win 3 legs"]]
+      : [[1, "1 leg", "One quick leg"], [3, "3 legs", "Play three legs"], [5, "5 legs", "Play five legs"]];
+    return (
+      <div className="mx-auto w-full max-w-xl px-4 py-10">
+        <h1 className="text-center text-4xl font-black">{pick === "two" ? "Two players" : "Single player"}</h1>
+        <p className="mt-3 text-center text-stone-400">{pick === "two" ? "Choose the length of the match." : "How many legs do you want to play?"}</p>
+        <div className="mt-8 space-y-3">
+          {opts.map(([n, title, sub]) => (
+            <button key={n} onClick={() => choose(pick, n)} className="block w-full rounded-xl border-2 border-emerald-600 bg-stone-900 p-5 text-left hover:bg-emerald-950">
+              <span className="block text-xl font-bold">{title}</span>
+              <span className="text-stone-400">{sub}</span>
+            </button>
+          ))}
+        </div>
+        <button onClick={() => setPick(null)} className="mt-6 block w-full text-center text-sm text-stone-400 hover:text-stone-100">← Change number of players</button>
+      </div>
+    );
+  }
+
+  const act = bull ? bull.who : cur;
   const hint = remaining <= 40 && remaining % 2 === 0 ? `Double ${remaining / 2} to win` : remaining === 50 ? "Bullseye to win" : null;
-
+  const nine = winner !== null && legDarts[winner] === 9;
+  const bigFinish = finish >= 100;
   return (
     <div className="mx-auto w-full max-w-md px-4 py-4">
-      <div className="flex items-center justify-between text-sm font-semibold text-stone-400">
-        <span>501</span>
-        <span>Darts: {darts} · Turn {turns + 1}</span>
-        <span>Best: {best || "–"}</span>
-      </div>
-
-      <p className="mt-1 text-center text-7xl font-black text-amber-400">{remaining}</p>
-      <p className="min-h-[1.25rem] text-center text-sm font-semibold text-emerald-400">{hint}</p>
-
-      <div className="mt-2 grid grid-cols-3 gap-2 text-center">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="rounded-lg border-2 border-stone-700 bg-stone-900 py-2">
-            <span className={`text-lg font-bold ${turn[i] ? "text-stone-50" : "text-stone-600"}`}>{turn[i] ? turn[i].label : "–"}</span>
-            {turn[i] && <span className="ml-1 text-xs text-stone-400">{turn[i].value}</span>}
+      {bestOf > 1 && (
+        <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-stone-400">
+          {two ? `Best of ${bestOf}` : `${bestOf} legs`} · Leg {leg}{!two ? ` of ${bestOf}` : ""}
+        </p>
+      )}
+      {two ? (
+        <div className="grid grid-cols-2 gap-2">
+          {[0, 1].map((i) => (
+            <div key={i} className={`rounded-xl border-2 px-3 py-2 text-center ${i === act && !done && !legBreak ? "border-amber-400 bg-stone-900" : "border-stone-700 bg-stone-900/50"}`}>
+              <p className="text-xs font-semibold uppercase tracking-widest text-stone-400">{name(i)}</p>
+              <p className={`text-4xl font-black ${i === act ? "text-amber-400" : "text-stone-300"}`}>{scores[i]}</p>
+              <p className="text-xs text-stone-500">Darts: {legDarts[i]}{bestOf > 1 ? ` · Legs: ${legsWon[i]}` : ""}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between text-sm font-semibold text-stone-400">
+            <span>501</span>
+            <span>Darts: {legDarts[0]} · Turn {turns[0] + 1}</span>
+            <span>Best: {best || "–"}</span>
           </div>
-        ))}
-      </div>
-      <p className="mt-2 min-h-[1.5rem] text-center font-bold text-red-400" role="status">{msg}</p>
+          <p className="mt-1 text-center text-7xl font-black text-amber-400">{scores[0]}</p>
+        </>
+      )}
+      <p className="mt-1 min-h-[1.25rem] text-center text-sm font-semibold text-emerald-400">
+        {bull ? "BULL UP · closest to the bull throws first" : two && !done ? `${name(cur)}'s turn${hint ? ` · ${hint}` : ""}` : hint}
+      </p>
 
-      <svg
-        ref={svgRef}
-        viewBox="0 0 440 440"
-        className="mx-auto mt-1 w-full max-w-[420px] cursor-crosshair"
-        style={{ touchAction: "manipulation" }}
-        onPointerDown={setAimFromPointer}
-        role="img"
-        aria-label="Dartboard. Tap to choose where to aim."
-      >
-        {art}
-        <circle cx={aim.x} cy={aim.y} r="3" fill="#fbbf24" opacity="0.7" />
-        {landings.map((l, i) => (
-          <circle key={i} cx={l.x} cy={l.y} r="4.5" fill="#fafafa" stroke="#0c0a09" strokeWidth="1.5" />
-        ))}
-        <g ref={crossRef} transform={`translate(${aim.x} ${aim.y})`} pointerEvents="none">
-          <circle r="10" fill="none" stroke="#fbbf24" strokeWidth="2" />
-          <line x1="-16" x2="16" y1="0" y2="0" stroke="#fbbf24" strokeWidth="2" />
-          <line y1="-16" y2="16" x1="0" x2="0" stroke="#fbbf24" strokeWidth="2" />
-        </g>
-      </svg>
+      {bull ? (
+        <div className="mt-1 min-h-[5.5rem] space-y-1 rounded-lg border-2 border-stone-700 bg-stone-900 px-3 py-2 text-center text-sm">
+          {[0, 1].map((i) => bull.d[i] !== null && (
+            <p key={i} className="font-semibold text-stone-200">
+              <span style={{ color: i === 0 ? "#fafafa" : "#38bdf8" }}>●</span> {name(i)}: {bull.d[i] <= 6.35 ? "Bullseye! " : bull.d[i] <= 15.9 ? "Outer bull · " : ""}{bull.d[i].toFixed(1)} mm from the centre
+            </p>
+          ))}
+          {bull.winner === null && !bull.tie && <p className="text-amber-300">{name(bull.who)}: aim at the bull and press THROW</p>}
+          {bull.tie && <p className="font-bold text-amber-300">Dead heat! Throw again.</p>}
+          {bull.winner !== null && <p className="text-base font-black text-emerald-400">{name(bull.winner)} is closest and throws first!</p>}
+        </div>
+      ) : (
+        <div className="mt-1 grid grid-cols-3 gap-2 text-center">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="rounded-lg border-2 border-stone-700 bg-stone-900 py-2">
+              <span className={`text-lg font-bold ${turn[i] ? "text-stone-50" : "text-stone-600"}`}>{turn[i] ? turn[i].label : "–"}</span>
+              {turn[i] && <span className="ml-1 text-xs text-stone-400">{turn[i].value}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="mt-2 flex min-h-[2.75rem] items-center justify-center" role="status">
+        {celebrate && !celebrate.confettiOnly ? (
+          <div key={celebrate.id} className="flex flex-col items-center rounded-xl bg-amber-400 px-4 py-1 text-center text-stone-950" style={{ animation: "pop180 .4s ease-out both" }}>
+            <span className={`${celebrate.big ? "text-2xl" : "text-xl"} font-black leading-none`}>{celebrate.text}</span>
+            {celebrate.sub && <span className="text-[11px] font-bold leading-tight">{celebrate.sub}</span>}
+          </div>
+        ) : (
+          <span className="font-bold text-red-400">{msg}</span>
+        )}
+      </div>
+
+      <style>{CELEBRATE_CSS}</style>
+      <div className="relative mx-auto mt-1 w-full max-w-[420px]">
+        <svg
+          ref={svgRef}
+          viewBox="0 0 440 440"
+          className="block w-full cursor-crosshair"
+          style={{ touchAction: "manipulation" }}
+          onPointerDown={setAimFromPointer}
+          role="img"
+          aria-label="Dartboard. Tap to choose where to aim."
+        >
+          {art}
+          <circle cx={aim.x} cy={aim.y} r="3" fill="#fbbf24" opacity="0.7" />
+          {landings.map((l, i) => (
+            <circle key={i} cx={l.x} cy={l.y} r="4.5" fill={l.c || "#fafafa"} stroke="#0c0a09" strokeWidth="1.5" />
+          ))}
+          <g ref={crossRef} transform={`translate(${aim.x} ${aim.y})`} pointerEvents="none">
+            <circle r="10" fill="none" stroke="#fbbf24" strokeWidth="2" />
+            <line x1="-16" x2="16" y1="0" y2="0" stroke="#fbbf24" strokeWidth="2" />
+            <line y1="-16" y2="16" x1="0" x2="0" stroke="#fbbf24" strokeWidth="2" />
+          </g>
+        </svg>
+      </div>
       <p className="mt-1 text-center text-xs text-stone-500">Tap the board to aim. Press THROW when the crosshair is on target.</p>
 
-      {turnOver ? (
-        <button onClick={nextTurn} className="mt-3 w-full rounded-xl bg-stone-700 px-4 py-4 text-xl font-black text-white hover:bg-stone-600">Next turn →</button>
+      {bull && (bull.winner !== null || bull.tie) ? (
+        <button onClick={bull.tie ? bullAgain : startGame} className="mt-3 w-full rounded-xl bg-emerald-600 px-4 py-4 text-xl font-black text-white hover:bg-emerald-500">
+          {bull.tie ? "Throw again" : `Start game · ${name(bull.winner)} throws first →`}
+        </button>
+      ) : turnOver ? (
+        <button onClick={nextTurn} className="mt-3 w-full rounded-xl bg-stone-700 px-4 py-4 text-xl font-black text-white hover:bg-stone-600">
+          {two ? `${name(1 - cur)}'s turn →` : "Next turn →"}
+        </button>
       ) : (
-        <button onClick={throwDart} disabled={won} className="mt-3 w-full rounded-xl bg-red-600 px-4 py-4 text-xl font-black text-white hover:bg-red-500 active:bg-red-700 disabled:opacity-50">
-          THROW
+        <button
+          onClick={throwDart}
+          disabled={done || cooling || !!legBreak}
+          className={`relative mt-3 w-full overflow-hidden rounded-xl px-4 py-4 text-xl font-black text-white ${cooling ? "bg-red-950" : "bg-red-600 hover:bg-red-500 active:bg-red-700"} ${done || legBreak ? "opacity-50" : ""}`}
+        >
+          {cooling && <span className="absolute inset-y-0 left-0 bg-red-600" style={{ animation: "coolFill 1s linear forwards" }} />}
+          <span className="relative">THROW</span>
         </button>
       )}
 
-      {won && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className={`w-full max-w-sm rounded-2xl border-2 bg-stone-900 p-8 text-center shadow-2xl ${darts === 9 ? "border-amber-400" : "border-emerald-500"}`}>
-            <p className={`text-4xl font-black ${darts === 9 ? "text-amber-400" : "text-emerald-400"}`}>{darts === 9 ? "🎯 NINE-DARTER!" : "Game shot!"}</p>
-            <p className="mt-2 text-xl font-bold">{darts} darts</p>
-            <p className="mt-1 text-stone-300">{darts === best ? "That's your best!" : `Your best is ${best}.`}</p>
-            <div className="mt-6 flex flex-col gap-2">
-              <button onClick={again} className="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white hover:bg-emerald-500">Play again</button>
-              <button onClick={onBack} className="rounded-lg border border-stone-600 px-5 py-2 font-semibold text-stone-300 hover:bg-stone-800">Back to menu</button>
-            </div>
+      {/* Between legs */}
+      {legBreak && !done && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/70 p-4">
+          {celebrate?.confettiOnly && confetti.map((c, i) => <ConfettiPiece key={i} c={c} />)}
+          <div className={`w-full max-w-sm rounded-2xl border-2 bg-stone-900 p-8 text-center shadow-2xl ${legDarts[legBreak.winner] === 9 || bigFinish ? "border-amber-400" : "border-emerald-500"}`}>
+            <p className={`text-3xl font-black ${legDarts[legBreak.winner] === 9 || bigFinish ? "text-amber-400" : "text-emerald-400"}`}>
+              {legDarts[legBreak.winner] === 9 ? "🎯 NINE-DARTER!" : bigFinish ? (finish >= 150 ? "🔥 HUGE FINISH!" : "🔥 BIG FINISH!") : two ? `${name(legBreak.winner)} wins leg ${leg}!` : `Leg ${leg} complete!`}
+            </p>
+            {(legDarts[legBreak.winner] === 9 || bigFinish) && two && <p className="mt-1 text-lg font-bold text-stone-100">{name(legBreak.winner)} wins leg {leg}!</p>}
+            {bigFinish && <p className="mt-1 font-bold text-amber-300">{finish} checkout</p>}
+            <p className="mt-2 text-xl font-bold">{legDarts[legBreak.winner]} {legDarts[legBreak.winner] === 1 ? "dart" : "darts"}</p>
+            {two && <p className="mt-1 text-2xl font-black text-stone-50">{legsWon[0]} – {legsWon[1]}</p>}
+            {!two && <p className="mt-1 text-stone-300">Leg {leg} of {bestOf}</p>}
+            <button onClick={nextLeg} className="mt-6 w-full rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white hover:bg-emerald-500">
+              Next leg →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* End of the match */}
+      {done && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/70 p-4">
+          {celebrate?.confettiOnly && confetti.map((c, i) => <ConfettiPiece key={i} c={c} />)}
+          <div className={`w-full max-w-sm rounded-2xl border-2 bg-stone-900 p-8 text-center shadow-2xl ${nine || bigFinish ? "border-amber-400" : "border-emerald-500"}`}>
+            {showStats ? (
+              <>
+                <p className="text-2xl font-black text-stone-50">Match stats</p>
+                <StatsTable stats={stats} two={two} legsWon={legsWon} bestOf={bestOf} />
+                <button onClick={() => setShowStats(false)} className="mt-5 w-full rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white hover:bg-emerald-500">Back</button>
+              </>
+            ) : (
+              <>
+                <p className={`text-4xl font-black ${nine || bigFinish ? "text-amber-400" : "text-emerald-400"}`}>
+                  {nine ? "🎯 NINE-DARTER!" : finish >= 150 ? "🔥 HUGE FINISH!" : bigFinish ? "🔥 BIG FINISH!" : two ? `${name(winner)} wins!` : bestOf > 1 ? "All legs done!" : "Game shot!"}
+                </p>
+                {(nine || bigFinish) && two && <p className="mt-1 text-lg font-bold text-stone-100">{name(winner)} wins!</p>}
+                {bigFinish && <p className="mt-1 font-bold text-amber-300">{finish} checkout</p>}
+                {two && bestOf > 1 && <p className="mt-2 text-2xl font-black text-stone-50">{legsWon[0]} – {legsWon[1]}</p>}
+                <p className="mt-2 text-xl font-bold">{legDarts[winner]} {legDarts[winner] === 1 ? "dart" : "darts"}{bestOf > 1 ? " in the last leg" : ""}</p>
+                {!two && <p className="mt-1 text-stone-300">3-dart average: {avgOf(stats[0]).toFixed(1)} · Best leg: {best} {best === 1 ? "dart" : "darts"}</p>}
+                {two && bestOf === 1 && <p className="mt-1 text-stone-300">{name(1 - winner)} had {scores[1 - winner]} left.</p>}
+                <div className="mt-6 flex flex-col gap-2">
+                  <button onClick={() => setShowStats(true)} className="rounded-lg bg-amber-400 px-5 py-2.5 font-bold text-stone-950 hover:bg-amber-300">Show stats</button>
+                  <button onClick={() => choose(mode, bestOf)} className="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white hover:bg-emerald-500">Play again</button>
+                  <button onClick={() => { setMode(null); setPick(null); }} className="rounded-lg border border-stone-600 px-5 py-2 font-semibold text-stone-300 hover:bg-stone-800">Change mode</button>
+                  <button onClick={onBack} className="rounded-lg border border-stone-600 px-5 py-2 font-semibold text-stone-300 hover:bg-stone-800">Back to menu</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -1060,7 +1347,7 @@ const GAMES = [
   { id: "top-10", name: "The Top 10", blurb: "Name all 10. Three lives. No misses = a whitewash!", live: true },
   { id: "higher-lower", name: "Higher or Lower", blurb: "Order of Merit: is the next player ranked higher or lower?", live: true },
   { id: "lineup", name: "Line Them Up", blurb: "Put 5 players in Order of Merit order. Three lives.", live: true },
-  { id: "darts501", name: "501", blurb: "Play a full leg of darts. Aim, time it, finish on a double.", live: true },
+  { id: "darts501", name: "501", blurb: "Play a full leg of darts. Solo or two players on one screen.", live: true },
   { id: "guess-player", name: "Guess the Player", blurb: "Coming soon", live: false },
 ];
 
