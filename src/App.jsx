@@ -252,7 +252,7 @@ const QUESTIONS = [
     title: "Highest ranked players in the PDC Order of Merit not to qualify for the PDC Grand Slam of Darts",
     answers: [
       "Danny Noppert", "Gary Anderson", "Damon Heta", "Dirk van Duijvenbode", "Ryan Joyce",
-      "William O'Connor", "Daryl Gurney", "Dave Chisnall", "Ricardo Pietreczko", "Mike De Decker",
+      "William O’Connor", "Daryl Gurney", "Dave Chisnall", "Ricardo Pietreczko", "Mike De Decker",
     ],
   },
   {
@@ -269,6 +269,14 @@ const QUESTIONS = [
     answers: [
       "Luke Humphries", "Martin Lukeman", "Rob Cross", "Nathan Aspinall", "Peter Wright",
       "James Wade", "Gary Anderson", "Phil Taylor", "Dave Chisnall", "Robert Thornton",
+    ],
+  },
+  {
+    date: "2026-11-18",
+    title: "Highest averages at the PDC Grand Slam of Darts 2026 group stage",
+    answers: [
+      "Luke Littler", "Tom Sykes", "Niko Springer", "James Wade", "Rob Cross",
+      "Stephen Bunting", "Maik Kuivenhoven", "Nathan Aspinall", "Wessel Nijman", "Gian van Veen",
     ],
   },
 ];
