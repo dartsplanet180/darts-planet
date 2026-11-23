@@ -279,6 +279,30 @@ const QUESTIONS = [
       "Stephen Bunting", "Maik Kuivenhoven", "Nathan Aspinall", "Wessel Nijman", "Gian van Veen",
     ],
   },
+  {
+    date: "2026-11-22",
+    title: "Every player to win the PDC Grand Slam of Darts (not including today)",
+    answers: [
+      "Luke Littler", "Luke Humphries", "Michael Smith", "Gerwyn Price", "José de Sousa",
+      "Michael van Gerwen", "Phil Taylor", "Raymond van Barneveld", "Scott Waites", null,
+    ],
+  },
+  {
+    date: "2026-11-23",
+    title: "Last 10 players to beat Gerwyn Price in the final of a ranked PDC event",
+    answers: [
+      "Luke Humphries", "Ross Smith", "Luke Littler", "Wessel Nijman", "Joe Cullen",
+      "Bradley Brooks", "Michael van Gerwen", "Martin Schindler", "Peter Wright", "Rob Cross",
+    ],
+  },
+  {
+    date: "2026-11-24",
+    title: "Top 10 players with the highest combined average in the PDC Grand Slam of Darts 2026",
+    answers: [
+      "Luke Littler", "Luke Humphries", "Stephen Bunting", "James Wade", "Michael van Gerwen",
+      "Nathan Aspinall", "Tom Sykes", "Kevin Doets", "Beau Greaves", "Rob Cross",
+    ],
+  },
 ];
 
 /* ═════════ HELPERS ═════════ */
@@ -355,7 +379,7 @@ function TopTen({ q, onBack }) {
   const [revealed, setRevealed] = useState(false); // answers shown after a loss
   const [closed, setClosed] = useState(false); // end-of-game popup dismissed
 
-  const total = q.answers.length; // 10
+  const total = q.answers.filter(Boolean).length; // 10 (a null slot is greyed out and not counted)
   const won = found.size === total;
   const perfect = won && lives === 3; // no wrong answers = whitewash
   const lost = lives === 0;
@@ -389,6 +413,14 @@ function TopTen({ q, onBack }) {
 
       <ol className="mt-4 space-y-1.5">
         {q.answers.map((name, i) => {
+          if (name === null) {
+            return (
+              <li key={`slot-${i}`} className="flex items-center gap-3 rounded-lg border-2 border-dashed border-stone-800 bg-stone-900/30 px-3 py-2.5 opacity-40" aria-label={`Slot ${i + 1} is not available`}>
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-800 text-sm font-bold text-stone-500">{i + 1}</span>
+                <span className="flex-1 font-semibold text-stone-600">—</span>
+              </li>
+            );
+          }
           const isFound = found.has(name);
           const missed = lost && revealed && !isFound;
           return (
