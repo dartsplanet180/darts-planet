@@ -116,6 +116,7 @@ const PLAYERS = [
   "Marvin Kraft", "Paul Krohne", "Jonas Masalin", "Michael Unterbuchner", "Jan Schmidt",
   "Pero Ljubic", "Christopher Wickenden", "Johan Engstrom", "Nandor Major", "Marcel Hausotter",
   "Jack Aldridge", "Archie Self",
+  "Anton Ostlund",
 ];
 
 /* ═════════ 2. QUESTIONS (one per day) ═════════
@@ -301,6 +302,14 @@ const QUESTIONS = [
     answers: [
       "Luke Littler", "Luke Humphries", "Stephen Bunting", "James Wade", "Michael van Gerwen",
       "Nathan Aspinall", "Tom Sykes", "Kevin Doets", "Beau Greaves", "Rob Cross",
+    ],
+  },
+  {
+    date: "2026-11-25",
+    title: "Most 180s in the PDC Grand Slam of Darts 2026",
+    answers: [
+      "Kevin Doets", "Gian van Veen", "Gerwyn Price", "Michael van Gerwen", "Niko Springer",
+      "Nathan Aspinall", "Jermaine Wattimena", "Tom Sykes", "Luke Littler", "Gabriel Clemens",
     ],
   },
 ];
@@ -510,38 +519,37 @@ function TopTen({ q, onBack }) {
    Players in order, rank 1 → 150. A leading "=" means the SAME rank as the
    player above (a tie). Update LAST_UPDATED and this list whenever the
    Order of Merit changes. */
-const LAST_UPDATED = "As of: November 5, 2026. Updated after PC34.";
+const LAST_UPDATED = "As of: November 22, 2026. Updated after the Grand Slam of Darts.";
 const OOM_RAW = [
-  "Luke Littler", "Luke Humphries", "Gian van Veen", "Gerwyn Price", "Jonny Clayton", "Ross Smith",
-  "James Wade", "Josh Rock", "Stephen Bunting", "Danny Noppert", "Michael van Gerwen",
-  "=Nathan Aspinall", "Wessel Nijman", "Gary Anderson", "Ryan Searle", "Chris Dobey",
-  "Luke Woodhouse", "Jermaine Wattimena", "Krzysztof Ratajski", "Martin Schindler",
-  "Dirk van Duijvenbode", "=Damon Heta", "Kevin Doets", "Rob Cross", "Ryan Joyce",
-  "Cameron Menzies", "Andrew Gilding", "Niels Zonneveld", "William O'Connor", "=Daryl Gurney",
-  "Dave Chisnall", "Joe Cullen", "Mike De Decker", "Niko Springer", "Peter Wright",
-  "Ricardo Pietreczko", "Michael Smith", "Justin Hood", "Jeffrey de Graaf", "Callan Rydz",
-  "Mickey Mansell", "Karel Sedlacek", "Martin Lukeman", "Kim Huybrechts", "Scott Williams",
-  "James Hurrell", "Raymond van Barneveld", "Brendan Dolan", "Madars Razma", "Connor Scutt",
-  "Sebastian Bialecki", "Ricky Evans", "Gabriel Clemens", "Ritchie Edhouse", "Mensur Suljovic",
-  "Keane Barry", "Ian White", "Richard Veenstra", "Bradley Brooks", "Dimitri Van den Bergh",
-  "Alan Soutar", "Rob Owen", "Lukas Wenig", "Nick Kenny", "Cristo Reyes", "Max Hopp",
-  "Ryan Meikle", "Mario Vandenbogaerde", "Cam Crabtree", "Wesley Plaisier", "Maik Kuivenhoven",
-  "Thibault Tricole", "Tom Bissell", "Beau Greaves", "Adam Lipscombe", "Darryl Pilgrim",
-  "Charlie Manby", "Cor Dekker", "Dominik Gruellich", "Christian Kist", "Tom Sykes",
-  "Tommy Morris", "=Andy Boulton", "Jim Long", "Oskar Lukasiak", "Joe Hunt", "Darius Labanauskas",
-  "=Jimmy van Schie", "Thomas Lovely", "Leon Weber", "Viktor Tingstrom", "Shane McGuirk",
-  "Marvin van Velzen", "Alexander Merkx", "Owen Bates", "Henry Coates", "=Tavis Dudeney",
-  "Adam Gawlas", "Jurjen van der Velde", "Greg Ritchie", "Jeffrey De Zwaan", "Kai Gotthardt",
-  "Adam Paxton", "David Sharp", "Stephen Burton", "Chris Landman", "Mervyn King",
+  "Luke Littler", "Gian van Veen", "Gerwyn Price", "Luke Humphries", "Jonny Clayton", "Ross Smith",
+  "James Wade", "Michael van Gerwen", "Nathan Aspinall", "Wessel Nijman", "=Stephen Bunting",
+  "Josh Rock", "Ryan Searle", "Danny Noppert", "Chris Dobey", "Gary Anderson", "Luke Woodhouse",
+  "Jermaine Wattimena", "Krzysztof Ratajski", "Martin Schindler", "Kevin Doets", "Damon Heta",
+  "Dirk van Duijvenbode", "Rob Cross", "Cameron Menzies", "Ryan Joyce", "Andrew Gilding",
+  "Niels Zonneveld", "William O'Connor", "Niko Springer", "Daryl Gurney", "Dave Chisnall",
+  "Joe Cullen", "Ricardo Pietreczko", "Mike De Decker", "Peter Wright", "Michael Smith",
+  "Karel Sedlacek", "=Justin Hood", "Callan Rydz", "Jeffrey de Graaf", "Sebastian Bialecki",
+  "Gabriel Clemens", "=Ricky Evans", "James Hurrell", "Kim Huybrechts", "Brendan Dolan",
+  "Madars Razma", "Raymond van Barneveld", "Scott Williams", "Bradley Brooks", "Mensur Suljovic",
+  "Mickey Mansell", "Keane Barry", "Connor Scutt", "Alan Soutar", "Richard Veenstra", "=Ian White",
+  "Ritchie Edhouse", "Rob Owen", "Dimitri Van den Bergh", "Lukas Wenig", "Cristo Reyes",
+  "Max Hopp", "Nick Kenny", "Cam Crabtree", "Maik Kuivenhoven", "Martin Lukeman", "Ryan Meikle",
+  "Mario Vandenbogaerde", "Wesley Plaisier", "Tom Sykes", "Thibault Tricole", "Beau Greaves",
+  "Tom Bissell", "Adam Lipscombe", "Charlie Manby", "Darryl Pilgrim", "Tommy Morris", "Cor Dekker",
+  "Dominik Gruellich", "Christian Kist", "Andy Boulton", "Jim Long", "Joe Hunt", "Henry Coates",
+  "=Oskar Lukasiak", "Darius Labanauskas", "=Jimmy van Schie", "Thomas Lovely", "Leon Weber",
+  "Viktor Tingstrom", "Shane McGuirk", "Marvin van Velzen", "Alexander Merkx", "Owen Bates",
+  "Tavis Dudeney", "Adam Gawlas", "Jurjen van der Velde", "Greg Ritchie", "Jeffrey De Zwaan",
+  "Kai Gotthardt", "Adam Paxton", "David Sharp", "Stephen Burton", "Chris Landman", "Mervyn King",
   "Benjamin Pratnemer", "Martijn Dragt", "Dennie Olde Kalter", "=Adam Warner", "Tyler Thorpe",
   "=Jeffrey Sparidaans", "Tommy Lishman", "Sietse Lap", "Derek Coulson", "=Niall Culleton",
-  "Adam Leek", "=Stefan Bellmont", "=Scott Waites", "Steve Lennon", "Jack Tweddell", "Arno Merk",
-  "Maximilian Czerwinski", "Stephen Rosney", "Rhys Griffin", "Stefaan Henderyck", "Nathan Potter",
-  "Carl Sneyd", "Harry Ward", "Tytus Kanik", "Samuel Price", "Daniel Klose", "Jack Aldridge",
-  "Daniel Ayres", "Yorick Hofkens", "Lewis Pride", "=Pascal Rupprecht", "Marvin Kraft",
-  "=Andy Baetens", "Rusty-Jake Rodriguez", "Paul Krohne", "Boris Krcmar", "Jonas Masalin",
-  "=Michael Unterbuchner", "Jan Schmidt", "=Patrik Kovacs", "Pero Ljubic", "Archie Self",
-  "=Christopher Wickenden", "Johan Engstrom",
+  "Rusty-Jake Rodriguez", "=Stefan Bellmont", "=Adam Leek", "=Scott Waites", "Steve Lennon",
+  "Carl Sneyd", "=Jack Tweddell", "Arno Merk", "Maximilian Czerwinski", "Stephen Rosney",
+  "Rhys Griffin", "Stefaan Henderyck", "Nathan Potter", "Anton Ostlund", "Harry Ward",
+  "Tytus Kanik", "Samuel Price", "Daniel Klose", "Jack Aldridge", "Daniel Ayres", "Paolo Nebrida",
+  "=Yorick Hofkens", "Lewis Pride", "=Pascal Rupprecht", "Jan Schmidt", "Marvin Kraft",
+  "=Andy Baetens", "Paul Krohne", "Boris Krcmar", "Jonas Masalin", "=Michael Unterbuchner",
+  "Patrik Kovacs", "Pero Ljubic",
 ];
 const OOM = (() => {
   let rank = 0;
