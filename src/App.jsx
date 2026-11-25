@@ -289,7 +289,7 @@ const QUESTIONS = [
     ],
   },
   {
-    date: "2026-11-23",
+    date: "2026-11-25",
     title: "Last 10 players to beat Gerwyn Price in the final of a ranked PDC event",
     answers: [
       "Luke Humphries", "Ross Smith", "Luke Littler", "Wessel Nijman", "Joe Cullen",
@@ -305,11 +305,19 @@ const QUESTIONS = [
     ],
   },
   {
-    date: "2026-11-25",
+    date: "2026-11-23",
     title: "Most 180s in the PDC Grand Slam of Darts 2026",
     answers: [
       "Kevin Doets", "Gian van Veen", "Gerwyn Price", "Michael van Gerwen", "Niko Springer",
       "Nathan Aspinall", "Jermaine Wattimena", "Tom Sykes", "Luke Littler", "Gabriel Clemens",
+    ],
+  },
+  {
+    date: "2026-11-26",
+    title: "Top 10 players on the PDC Pro Tour Order of Merit (not including the current Top 40 in the Main Order of Merit who currently qualify for the PDC WDC)",
+    answers: [
+      "Cristo Reyes", "Sebastian Bialecki", "Kim Huybrechts", "Beau Greaves", "Jeffrey de Graaf",
+      "Maik Kuivenhoven", "Charlie Manby", "Richard Veenstra", "Tom Bissell", "Mickey Mansell",
     ],
   },
 ];
